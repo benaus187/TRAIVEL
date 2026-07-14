@@ -21,3 +21,9 @@ frontend/out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Working / temp files
+hook*.png
+Folder_structure.png
+~$*
+*.tmp
