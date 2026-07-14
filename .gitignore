@@ -1,0 +1,23 @@
+# Claude local config — private, never commit
+.claude/CLAUDE.local.md
+.claude/settings.local.json
+
+# Environment files
+frontend/.env.local
+frontend/.env*.local
+backend/.env
+backend/.env.local
+
+# Dependencies
+frontend/node_modules/
+backend/__pycache__/
+backend/.venv/
+backend/venv/
+
+# Build output
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,65 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(uvicorn:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cp \"$CLAUDE_TOOL_INPUT_FILE\" \"$CLAUDE_TOOL_INPUT_FILE.bak\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$CLAUDE_TOOL_OUTPUT_FILE\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$(date): $CLAUDE_TOOL_NAME on $CLAUDE_TOOL_OUTPUT_FILE\" >> ~/.claude/activity.log"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -Command \"(New-Object System.Media.SoundPlayer 'C:\\Windows\\Media\\chimes.wav').PlaySync()\""
+          }
+        ]
+      }
+    ]
+  }
+}

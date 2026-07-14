@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#c14a2e;text-decoration:none}a:hover{color:#96361f}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">TRAIVEL — desktop web app, three visual directions (main planning screen)</span></div>
+<div style="max-width:860px;margin:0 0 22px;font:13px/1.6 system-ui,sans-serif;color:rgba(0,0,0,.6)">
+Assumptions: desktop web app, ~1200px screen; main screen = trip brief + AI-generated itinerary with reason codes (from the deck). Wordmark TR<b>AI</b>VEL with "AI" highlighted. Coral/orange accent. Imagery uses striped placeholders — drop in real photos later.
+</div>
+<div class="dv-opts">
+
+<!-- ================= 1a Fresh & energetic ================= -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Fresh &amp; energetic — bright coral, rounded, playful chips</div>
+<div class="dv-card" style="width:1200px">
+<div data-screen-label="1a Fresh" style="background:#faf7f2;font-family:Sora,sans-serif;color:#231d1a">
+
+  <!-- nav -->
+  <div style="display:flex;align-items:center;gap:28px;padding:16px 32px;background:#fffdf9;border-bottom:1px solid #eee5d8">
+    <div style="font-size:21px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center">TR<span style="background:#e85d3d;color:#fff;border-radius:8px;padding:1px 7px;margin:0 2px;font-size:19px">AI</span>VEL</div>
+    <div style="display:flex;gap:22px;font-size:13.5px;font-weight:500;color:#6f645c">
+      <span style="color:#231d1a;border-bottom:2px solid #e85d3d;padding-bottom:2px">Plan</span><span>Trips</span><span>Trends</span><span>Saved</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+      <div style="font-size:13px;font-weight:600;background:#231d1a;color:#fff;border-radius:999px;padding:9px 18px">+ New trip</div>
+      <div style="width:34px;height:34px;border-radius:50%;background:repeating-linear-gradient(45deg,#f3d9c8,#f3d9c8 4px,#eccab3 4px,#eccab3 8px)"></div>
+    </div>
+  </div>
+
+  <!-- hero strip -->
+  <div style="padding:30px 32px 0">
+    <div style="font-size:12px;font-weight:600;letter-spacing:1.5px;color:#e85d3d;text-transform:uppercase">Your next trip</div>
+    <div style="display:flex;align-items:baseline;gap:14px;margin-top:6px">
+      <div style="font-size:34px;font-weight:700;letter-spacing:-.5px">Sydney, 3 days</div>
+      <div style="font-size:13px;color:#8a7d72">12–14 Sep · moderate budget · relaxed pace</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <div style="font-size:12.5px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:999px;padding:6px 13px">#SydneyEats</div>
+      <div style="font-size:12.5px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:999px;padding:6px 13px">#coastalwalk</div>
+      <div style="font-size:12.5px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:999px;padding:6px 13px">#budgettravel</div>
+      <div style="font-size:12.5px;font-weight:500;color:#8a7d72;border:1.5px dashed #d8cbbd;border-radius:999px;padding:5px 13px">+ add interest</div>
+    </div>
+  </div>
+
+  <!-- main grid -->
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:22px;padding:24px 32px 32px">
+
+    <!-- left: brief -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#fffdf9;border:1px solid #eee5d8;border-radius:18px;padding:20px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px">Trip brief</div>
+        <div style="display:flex;flex-direction:column;gap:11px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#8a7d72">Interests</span><span style="font-weight:600">food · coast · culture</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#8a7d72">Budget</span><span style="font-weight:600">Moderate</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#8a7d72">Pace</span><span style="font-weight:600">Relaxed</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#8a7d72">Avoid</span><span style="font-weight:600">Long taxi rides</span></div>
+        </div>
+        <div style="margin-top:18px;font-size:13.5px;font-weight:700;background:#e85d3d;color:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 4px 14px rgba(232,93,61,.35)">⟳ Regenerate route</div>
+      </div>
+      <div style="background:#fffdf9;border:1px solid #eee5d8;border-radius:18px;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700">Trend signals</div>
+          <div style="font-size:11px;color:#8a7d72">last 30 days</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;font-size:12.5px"><div style="flex:none;width:96px">Bondi sunrise</div><div style="flex:1;height:8px;border-radius:4px;background:#f3e9db"><div style="width:88%;height:100%;border-radius:4px;background:#e85d3d"></div></div><div style="font-weight:600">88</div></div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12.5px"><div style="flex:none;width:96px">Newtown food</div><div style="flex:1;height:8px;border-radius:4px;background:#f3e9db"><div style="width:74%;height:100%;border-radius:4px;background:#ef8a63"></div></div><div style="font-weight:600">74</div></div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12.5px"><div style="flex:none;width:96px">Manly ferry</div><div style="flex:1;height:8px;border-radius:4px;background:#f3e9db"><div style="width:61%;height:100%;border-radius:4px;background:#f4b08c"></div></div><div style="font-weight:600">61</div></div>
+        </div>
+        <div style="margin-top:14px;font-size:11.5px;color:#8a7d72;line-height:1.5">Sponsored and repeated content filtered out · sources permissioned</div>
+      </div>
+    </div>
+
+    <!-- right: itinerary -->
+    <div style="background:#fffdf9;border:1px solid #eee5d8;border-radius:18px;padding:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+        <div style="font-size:16px;font-weight:700">Day 1 · Coast + food</div>
+        <div style="font-size:11.5px;font-weight:600;background:#e8f4ec;color:#1f7a45;border-radius:999px;padding:4px 10px">✓ all stops verified</div>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <div style="font-size:12px;font-weight:600;background:#231d1a;color:#fff;border-radius:999px;padding:6px 14px">Day 1</div>
+          <div style="font-size:12px;font-weight:600;background:#f3e9db;color:#6f645c;border-radius:999px;padding:6px 14px">Day 2</div>
+          <div style="font-size:12px;font-weight:600;background:#f3e9db;color:#6f645c;border-radius:999px;padding:6px 14px">Day 3</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:16px;align-items:stretch;background:#faf5ec;border-radius:14px;padding:14px">
+          <div style="flex:none;width:54px;font-size:13px;font-weight:700;color:#e85d3d;padding-top:2px">09:00</div>
+          <div style="flex:none;width:110px;border-radius:10px;background:repeating-linear-gradient(135deg,#f6dcc6,#f6dcc6 6px,#efcdae 6px,#efcdae 12px);display:flex;align-items:center;justify-content:center;font:10px 'IBM Plex Mono',monospace;color:#9a7c5e">beach photo</div>
+          <div style="flex:1">
+            <div style="font-size:14.5px;font-weight:700">Bondi sunrise + coffee</div>
+            <div style="font-size:12.5px;color:#8a7d72;margin-top:3px;line-height:1.5">Low-crowd window before 10am. Strong visual trend fit from 214 recent posts.</div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <div style="font-size:11px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:6px;padding:3px 8px">social momentum</div>
+              <div style="font-size:11px;font-weight:600;background:#e8f4ec;color:#1f7a45;border-radius:6px;padding:3px 8px">hours verified</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:stretch;background:#faf5ec;border-radius:14px;padding:14px">
+          <div style="flex:none;width:54px;font-size:13px;font-weight:700;color:#e85d3d;padding-top:2px">11:00</div>
+          <div style="flex:none;width:110px;border-radius:10px;background:repeating-linear-gradient(135deg,#cfe4de,#cfe4de 6px,#bcd8cf 6px,#bcd8cf 12px);display:flex;align-items:center;justify-content:center;font:10px 'IBM Plex Mono',monospace;color:#5e8a7c">coast photo</div>
+          <div style="flex:1">
+            <div style="font-size:14.5px;font-weight:700">Bondi → Coogee coastal walk</div>
+            <div style="font-size:12.5px;color:#8a7d72;margin-top:3px;line-height:1.5">Continues the route on foot — zero transport friction, 2.5 h at relaxed pace.</div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <div style="font-size:11px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:6px;padding:3px 8px">transport fit</div>
+              <div style="font-size:11px;font-weight:600;background:#eef;color:#4a5ac0;border-radius:6px;padding:3px 8px">weather alternate ready</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:stretch;background:#faf5ec;border-radius:14px;padding:14px">
+          <div style="flex:none;width:54px;font-size:13px;font-weight:700;color:#e85d3d;padding-top:2px">14:00</div>
+          <div style="flex:none;width:110px;border-radius:10px;background:repeating-linear-gradient(135deg,#f3d9c8,#f3d9c8 6px,#ebc7ad 6px,#ebc7ad 12px);display:flex;align-items:center;justify-content:center;font:10px 'IBM Plex Mono',monospace;color:#9a6e50">food photo</div>
+          <div style="flex:1">
+            <div style="font-size:14.5px;font-weight:700">Newtown lunch cluster</div>
+            <div style="font-size:12.5px;color:#8a7d72;margin-top:3px;line-height:1.5">Matches your street-food interest; budget-friendly, 3 options within 300 m.</div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <div style="font-size:11px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:6px;padding:3px 8px">food fit</div>
+              <div style="font-size:11px;font-weight:600;background:#fdeae3;color:#c14a2e;border-radius:6px;padding:3px 8px">budget fit</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ================= 1b Clean & premium ================= -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Clean &amp; premium — editorial serif, calm neutrals, thin rules</div>
+<div class="dv-card" style="width:1200px">
+<div data-screen-label="1b Premium" style="background:#f7f5f1;font-family:'Space Grotesk',sans-serif;color:#1c1917">
+
+  <div style="display:flex;align-items:center;padding:20px 40px;border-bottom:1px solid #e2ddd4">
+    <div style="font-size:19px;font-weight:600;letter-spacing:3px">TR<span style="color:#c14a2e;border-bottom:2.5px solid #c14a2e">AI</span>VEL</div>
+    <div style="display:flex;gap:30px;font-size:13px;letter-spacing:.5px;color:#78716c;margin-left:64px">
+      <span style="color:#1c1917">Planner</span><span>My trips</span><span>Discover</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:20px">
+      <div style="font-size:12.5px;letter-spacing:1px;border:1px solid #1c1917;padding:8px 20px">NEW TRIP</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:repeating-linear-gradient(45deg,#ddd5c8,#ddd5c8 4px,#d2c8b8 4px,#d2c8b8 8px)"></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 400px;gap:0">
+    <!-- left editorial -->
+    <div style="padding:44px 40px;border-right:1px solid #e2ddd4">
+      <div style="font:11px 'IBM Plex Mono',monospace;letter-spacing:2px;color:#c14a2e">ITINERARY · SEP 12–14</div>
+      <div style="font-family:Newsreader,serif;font-size:46px;line-height:1.08;font-weight:500;margin-top:12px;max-width:560px">Three slow days along the Sydney coast</div>
+      <div style="font-size:14px;line-height:1.65;color:#57534e;margin-top:16px;max-width:520px">Built from 1,240 public trend signals, then verified against opening hours, transit and weather. Every stop carries a reason.</div>
+
+      <div style="display:flex;gap:36px;margin-top:30px;padding-top:24px;border-top:1px solid #e2ddd4">
+        <div><div style="font-family:Newsreader,serif;font-size:28px">7</div><div style="font:10.5px 'IBM Plex Mono',monospace;letter-spacing:1px;color:#78716c;margin-top:2px">STOPS</div></div>
+        <div><div style="font-family:Newsreader,serif;font-size:28px">100%</div><div style="font:10.5px 'IBM Plex Mono',monospace;letter-spacing:1px;color:#78716c;margin-top:2px">VERIFIED</div></div>
+        <div><div style="font-family:Newsreader,serif;font-size:28px">$–$$</div><div style="font:10.5px 'IBM Plex Mono',monospace;letter-spacing:1px;color:#78716c;margin-top:2px">BUDGET</div></div>
+        <div><div style="font-family:Newsreader,serif;font-size:28px">4.2 h</div><div style="font:10.5px 'IBM Plex Mono',monospace;letter-spacing:1px;color:#78716c;margin-top:2px">SAVED PLANNING</div></div>
+      </div>
+
+      <!-- timeline -->
+      <div style="margin-top:34px;display:flex;flex-direction:column">
+        <div style="font:11px 'IBM Plex Mono',monospace;letter-spacing:2px;color:#78716c;margin-bottom:14px">DAY ONE</div>
+        <div style="display:grid;grid-template-columns:64px 1fr auto;gap:0 20px;padding:16px 0;border-top:1px solid #e2ddd4;align-items:baseline">
+          <div style="font:13px 'IBM Plex Mono',monospace;color:#c14a2e">09:00</div>
+          <div><div style="font-family:Newsreader,serif;font-size:19px">Bondi sunrise &amp; coffee</div><div style="font-size:12.5px;color:#78716c;margin-top:3px">Low-crowd window · strong visual trend fit</div></div>
+          <div style="font:10.5px 'IBM Plex Mono',monospace;color:#1f7a45">✓ VERIFIED</div>
+        </div>
+        <div style="display:grid;grid-template-columns:64px 1fr auto;gap:0 20px;padding:16px 0;border-top:1px solid #e2ddd4;align-items:baseline">
+          <div style="font:13px 'IBM Plex Mono',monospace;color:#c14a2e">11:00</div>
+          <div><div style="font-family:Newsreader,serif;font-size:19px">Bondi → Coogee coastal walk</div><div style="font-size:12.5px;color:#78716c;margin-top:3px">Route continuity · zero transport friction</div></div>
+          <div style="font:10.5px 'IBM Plex Mono',monospace;color:#1f7a45">✓ VERIFIED</div>
+        </div>
+        <div style="display:grid;grid-template-columns:64px 1fr auto;gap:0 20px;padding:16px 0;border-top:1px solid #e2ddd4;align-items:baseline">
+          <div style="font:13px 'IBM Plex Mono',monospace;color:#c14a2e">14:00</div>
+          <div><div style="font-family:Newsreader,serif;font-size:19px">Newtown lunch</div><div style="font-size:12.5px;color:#78716c;margin-top:3px">Food preference · budget-friendly cluster</div></div>
+          <div style="font:10.5px 'IBM Plex Mono',monospace;color:#1f7a45">✓ VERIFIED</div>
+        </div>
+        <div style="display:grid;grid-template-columns:64px 1fr auto;gap:0 20px;padding:16px 0;border-top:1px solid #e2ddd4;border-bottom:1px solid #e2ddd4;align-items:baseline">
+          <div style="font:13px 'IBM Plex Mono',monospace;color:#c14a2e">18:00</div>
+          <div><div style="font-family:Newsreader,serif;font-size:19px">Observatory Hill sunset</div><div style="font-size:12.5px;color:#78716c;margin-top:3px">Best time window · quiet alternative to viral spot</div></div>
+          <div style="font:10.5px 'IBM Plex Mono',monospace;color:#1f7a45">✓ VERIFIED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right rail -->
+    <div style="padding:44px 40px;display:flex;flex-direction:column;gap:28px">
+      <div style="height:220px;background:repeating-linear-gradient(135deg,#e6dfd3,#e6dfd3 8px,#ded5c6 8px,#ded5c6 16px);display:flex;align-items:center;justify-content:center;font:11px 'IBM Plex Mono',monospace;color:#8a7f6e">route map</div>
+      <div>
+        <div style="font:11px 'IBM Plex Mono',monospace;letter-spacing:2px;color:#78716c;margin-bottom:14px">YOUR BRIEF</div>
+        <div style="display:flex;flex-direction:column;font-size:13.5px">
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #e2ddd4"><span style="color:#78716c">Interests</span><span>food · coast · culture</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #e2ddd4"><span style="color:#78716c">Pace</span><span>Relaxed</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #e2ddd4"><span style="color:#78716c">Budget</span><span>Moderate</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #e2ddd4;border-bottom:1px solid #e2ddd4"><span style="color:#78716c">Avoid</span><span>Long taxi rides</span></div>
+        </div>
+      </div>
+      <div style="background:#1c1917;color:#f7f5f1;padding:22px">
+        <div style="font:11px 'IBM Plex Mono',monospace;letter-spacing:2px;color:#c9b8a4">WHY THIS PLAN</div>
+        <div style="font-family:Newsreader,serif;font-size:16.5px;line-height:1.5;margin-top:10px;font-style:italic">"Coast clustered first, inland for lunch, back to the harbour for evening light."</div>
+        <div style="font-size:12px;color:#a8a29e;margin-top:12px">— reason codes on every stop</div>
+      </div>
+      <div style="font-size:13.5px;letter-spacing:1px;text-align:center;border:1px solid #1c1917;padding:13px">EDIT CONSTRAINTS</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ================= 1c Warm wanderlust ================= -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Warm wanderlust — dark sunset tones, photo-forward hero</div>
+<div class="dv-card" style="width:1200px">
+<div data-screen-label="1c Wanderlust" style="background:#211714;font-family:'Space Grotesk',sans-serif;color:#f6ede4">
+
+  <!-- hero with nav overlaid -->
+  <div style="position:relative;height:400px;background:linear-gradient(180deg,rgba(33,23,20,.15),rgba(33,23,20,.92) 88%),repeating-linear-gradient(115deg,#8a4a34,#8a4a34 10px,#7c4230 10px,#7c4230 20px)">
+    <div style="position:absolute;top:14px;right:18px;font:10px 'IBM Plex Mono',monospace;color:rgba(246,237,228,.55);background:rgba(0,0,0,.3);padding:3px 8px;border-radius:4px">destination photo — sunset coast</div>
+    <div style="display:flex;align-items:center;gap:30px;padding:20px 36px">
+      <div style="font-size:20px;font-weight:700;letter-spacing:1px">TR<span style="color:#ffb26b">AI</span>VEL<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#ffb26b;margin-left:3px"></span></div>
+      <div style="display:flex;gap:24px;font-size:13px;color:rgba(246,237,228,.75)">
+        <span style="color:#fff;font-weight:600">Plan</span><span>Trips</span><span>Trends</span>
+      </div>
+      <div style="margin-left:auto;width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:repeating-linear-gradient(45deg,#6e4a3a,#6e4a3a 4px,#5f3e30 4px,#5f3e30 8px)"></div>
+    </div>
+    <div style="position:absolute;left:36px;bottom:32px;right:36px">
+      <div style="font:11px 'IBM Plex Mono',monospace;letter-spacing:2px;color:#ffb26b">AI ITINERARY READY</div>
+      <div style="font-size:42px;font-weight:700;letter-spacing:-.5px;margin-top:8px">Sydney, your way</div>
+      <div style="font-size:14px;color:rgba(246,237,228,.75);margin-top:6px;max-width:520px">3 days · 7 verified stops · built from what travellers like you are loving right now</div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <div style="font-size:13.5px;font-weight:600;background:#ffb26b;color:#3a2418;border-radius:999px;padding:11px 24px">View full route</div>
+        <div style="font-size:13.5px;font-weight:600;border:1.5px solid rgba(255,255,255,.4);border-radius:999px;padding:10px 22px">Adjust brief</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- day cards -->
+  <div style="padding:28px 36px 36px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px">
+      <div style="font-size:17px;font-weight:700">Tonight &amp; tomorrow</div>
+      <div style="font-size:12px;color:rgba(246,237,228,.55)">agent adapts to weather &amp; your pace in real time</div>
+      <div style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;color:#7ec9a2">● live · all stops verified</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div style="background:#2c1f1a;border:1px solid #3d2c24;border-radius:16px;overflow:hidden">
+        <div style="height:130px;background:repeating-linear-gradient(135deg,#a05c3c,#a05c3c 8px,#93532f 8px,#93532f 16px);display:flex;align-items:flex-end;padding:10px"><span style="font:10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);background:rgba(0,0,0,.35);padding:2px 7px;border-radius:4px">bondi photo</span></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:700">Bondi sunrise</div><div style="font:12px 'IBM Plex Mono',monospace;color:#ffb26b">09:00</div></div>
+          <div style="font-size:12.5px;color:rgba(246,237,228,.65);margin-top:5px;line-height:1.5">High visual fit · low-crowd window</div>
+          <div style="display:flex;gap:6px;margin-top:10px"><div style="font-size:10.5px;font-weight:600;background:rgba(255,178,107,.15);color:#ffb26b;border-radius:5px;padding:3px 8px">trending</div><div style="font-size:10.5px;font-weight:600;background:rgba(126,201,162,.15);color:#7ec9a2;border-radius:5px;padding:3px 8px">verified</div></div>
+        </div>
+      </div>
+      <div style="background:#2c1f1a;border:1px solid #3d2c24;border-radius:16px;overflow:hidden">
+        <div style="height:130px;background:repeating-linear-gradient(135deg,#4a6e62,#4a6e62 8px,#40614f 8px,#40614f 16px);display:flex;align-items:flex-end;padding:10px"><span style="font:10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);background:rgba(0,0,0,.35);padding:2px 7px;border-radius:4px">coastal walk photo</span></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:700">Coastal walk</div><div style="font:12px 'IBM Plex Mono',monospace;color:#ffb26b">11:00</div></div>
+          <div style="font-size:12.5px;color:rgba(246,237,228,.65);margin-top:5px;line-height:1.5">On foot to Coogee · no transport friction</div>
+          <div style="display:flex;gap:6px;margin-top:10px"><div style="font-size:10.5px;font-weight:600;background:rgba(255,178,107,.15);color:#ffb26b;border-radius:5px;padding:3px 8px">route fit</div><div style="font-size:10.5px;font-weight:600;background:rgba(126,201,162,.15);color:#7ec9a2;border-radius:5px;padding:3px 8px">verified</div></div>
+        </div>
+      </div>
+      <div style="background:#2c1f1a;border:1px solid #3d2c24;border-radius:16px;overflow:hidden">
+        <div style="height:130px;background:repeating-linear-gradient(135deg,#8a6a3c,#8a6a3c 8px,#7d5e2f 8px,#7d5e2f 16px);display:flex;align-items:flex-end;padding:10px"><span style="font:10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);background:rgba(0,0,0,.35);padding:2px 7px;border-radius:4px">newtown food photo</span></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:700">Newtown lunch</div><div style="font:12px 'IBM Plex Mono',monospace;color:#ffb26b">14:00</div></div>
+          <div style="font-size:12.5px;color:rgba(246,237,228,.65);margin-top:5px;line-height:1.5">Street-food match · budget-friendly</div>
+          <div style="display:flex;gap:6px;margin-top:10px"><div style="font-size:10.5px;font-weight:600;background:rgba(255,178,107,.15);color:#ffb26b;border-radius:5px;padding:3px 8px">food fit</div><div style="font-size:10.5px;font-weight:600;background:rgba(126,201,162,.15);color:#7ec9a2;border-radius:5px;padding:3px 8px">verified</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "build out <a class="dv-oid" href="#1a">1a</a> as a full interactive page" · "mix <a class="dv-oid" href="#1b">1b</a>'s serif headlines into <a class="dv-oid" href="#1a">1a</a>" · "show the trip-brief onboarding screen in the style of <a class="dv-oid" href="#1c">1c</a>"</p>
+</section>
+
+</x-dc>
+</body>
+</html>
