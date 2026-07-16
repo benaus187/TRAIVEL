@@ -6,8 +6,8 @@ export function Nav() {
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <Wordmark />
         <nav className="flex items-center gap-6 text-sm text-muted-foreground">
-          <a href="#" className="hover:text-foreground transition-colors">
-            How it works
+          <a href="/plan" className="hover:text-foreground transition-colors">
+            Plan a trip
           </a>
           <a href="#" className="hover:text-foreground transition-colors">
             My trips
