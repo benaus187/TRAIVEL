@@ -3,6 +3,7 @@ from ..config import settings
 
 _PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
 _FIELD_MASK = "places.id,places.location,places.regularOpeningHours"
+_DISCOVER_MASK = "places.id,places.displayName,places.rating,places.userRatingCount,places.editorialSummary"
 
 
 async def search_place(name: str, destination: str) -> dict | None:
@@ -45,3 +46,40 @@ async def search_place(name: str, destination: str) -> dict | None:
         "lat": location.get("latitude"),
         "lon": location.get("longitude"),
     }
+
+
+async def discover_popular_places(destination: str) -> list[dict]:
+    """Fetch top tourist attractions for a destination to use as trend context for Claude."""
+    if not settings.google_places_api_key:
+        return []
+
+    headers = {
+        "X-Goog-Api-Key": settings.google_places_api_key,
+        "X-Goog-FieldMask": _DISCOVER_MASK,
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                _PLACES_URL,
+                headers=headers,
+                json={"textQuery": f"top tourist attractions things to do in {destination}", "rankPreference": "POPULARITY"},
+            )
+            r.raise_for_status()
+            data = r.json()
+    except Exception:
+        return []
+
+    results = []
+    for p in data.get("places", [])[:8]:
+        name = p.get("displayName", {}).get("text", "")
+        if not name:
+            continue
+        results.append({
+            "name": name,
+            "rating": p.get("rating"),
+            "review_count": p.get("userRatingCount"),
+            "summary": p.get("editorialSummary", {}).get("text", ""),
+        })
+    return results
