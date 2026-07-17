@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
+import { TrendPanel } from "@/components/trend-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -22,7 +23,7 @@ const PRESET_INTERESTS = [
 type GeoSuggestion = { name: string; admin1: string; country: string };
 
 export default function PlanPage() {
-  const { stops, state, error, tripId, weather, generate, reset } = useItineraryStream();
+  const { stops, state, error, tripId, weather, trends, generate, reset } = useItineraryStream();
   const [brief, setBrief] = useState<Partial<TripBrief>>({
     days: 2,
     budget_usd_per_day: 100,
@@ -358,6 +359,9 @@ export default function PlanPage() {
               )}
             </div>
             <Separator />
+            {trends && trends.length > 0 && (
+              <TrendPanel trends={trends} destination={brief.destination ?? ""} />
+            )}
             {weather && <WeatherBanner forecasts={weather} />}
             {stops.map((stop, i) => (
               <Card key={i} className="shadow-none">

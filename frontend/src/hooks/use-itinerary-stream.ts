@@ -14,18 +14,28 @@ export type WeatherDay = {
   location?: string;
 };
 
+export type TrendItem = {
+  text: string;
+  score: number;
+  upvotes: number;
+  comments: number;
+  source: "reddit" | "wikipedia" | "hackernews";
+};
+
 export function useItineraryStream() {
   const [stops, setStops] = useState<Stop[]>([]);
   const [state, setState] = useState<StreamState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
+  const [trends, setTrends] = useState<TrendItem[] | null>(null);
 
   const generate = useCallback(async (brief: TripBrief) => {
     setStops([]);
     setError(null);
     setTripId(null);
     setWeather(null);
+    setTrends(null);
     setState("streaming");
 
     try {
@@ -81,8 +91,9 @@ export function useItineraryStream() {
                   : s
               )
             );
+          } else if (event.type === "trends") {
+            setTrends(event.trends as TrendItem[]);
           } else if (event.type === "weather") {
-            console.log("[weather event]", event.forecasts);
             setWeather(event.forecasts as WeatherDay[]);
           } else if (event.type === "done") {
             if (event.trip_id) setTripId(event.trip_id as string);
@@ -104,7 +115,8 @@ export function useItineraryStream() {
     setError(null);
     setTripId(null);
     setWeather(null);
+    setTrends(null);
   }, []);
 
-  return { stops, state, error, tripId, weather, generate, reset };
+  return { stops, state, error, tripId, weather, trends, generate, reset };
 }

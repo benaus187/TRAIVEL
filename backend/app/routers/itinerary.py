@@ -10,6 +10,7 @@ from ..config import settings
 from ..db import get_db
 from ..services.places import search_place
 from ..services.weather import get_trip_weather
+from ..services.trends import fetch_trends
 
 router = APIRouter(prefix="/api/itinerary", tags=["itinerary"])
 
@@ -74,15 +75,26 @@ class TripBrief(BaseModel):
     avoid: list[str] = []
 
 
-def _build_prompt(brief: TripBrief) -> str:
+def _build_prompt(brief: TripBrief, trends: list[dict] | None = None) -> str:
     avoid_str = f"\nAvoid: {', '.join(brief.avoid)}" if brief.avoid else ""
     interests_str = ", ".join(brief.interests) if brief.interests else "general sightseeing"
+
+    trend_str = ""
+    if trends:
+        snippets = [f'- "{t["text"][:120]}" (score: {t["score"]})' for t in trends[:5]]
+        trend_str = f"""
+
+Current social trend signals for {brief.destination} (filtered, scored by recency × engagement):
+{chr(10).join(snippets)}
+
+Prioritise places that appear in trend signals with reason code "social momentum"."""
+
     return f"""Plan a {brief.days}-day trip to {brief.destination}.
 
 Traveller profile:
 - Interests: {interests_str}
 - Daily budget: ${brief.budget_usd_per_day} USD
-- Pace: {brief.pace}{avoid_str}
+- Pace: {brief.pace}{avoid_str}{trend_str}
 
 Create a realistic, time-blocked itinerary. For each stop assign at least one reason code that genuinely applies:
 - "social momentum" — trending or highly talked-about right now
@@ -142,12 +154,18 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
     async def stream():
         try:
             client = get_client()
+
+            # Fetch trend signals first — inject into prompt, emit to frontend
+            trends = await fetch_trends(brief.destination)
+            if trends:
+                yield f"data: {json.dumps({'type': 'trends', 'trends': trends})}\n\n"
+
             message = client.messages.create(
                 model="claude-opus-4-8",
                 max_tokens=4096,
                 tools=[ITINERARY_TOOL],
                 tool_choice={"type": "tool", "name": "create_itinerary"},
-                messages=[{"role": "user", "content": _build_prompt(brief)}],
+                messages=[{"role": "user", "content": _build_prompt(brief, trends)}],
             )
 
             collected_stops: list[dict] = []
