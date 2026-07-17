@@ -1,5 +1,6 @@
 import asyncio
 import json
+from datetime import date, timedelta
 import anthropic
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -7,6 +8,8 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..db import get_db
+from ..services.places import search_place
+from ..services.weather import get_trip_weather
 
 router = APIRouter(prefix="/api/itinerary", tags=["itinerary"])
 
@@ -64,8 +67,9 @@ ITINERARY_TOOL: anthropic.types.ToolParam = {
 class TripBrief(BaseModel):
     destination: str
     days: int
+    start_date: str | None = None  # ISO date, e.g. "2026-07-24"
     interests: list[str]
-    budget: str
+    budget_usd_per_day: int = 100
     pace: str
     avoid: list[str] = []
 
@@ -77,7 +81,7 @@ def _build_prompt(brief: TripBrief) -> str:
 
 Traveller profile:
 - Interests: {interests_str}
-- Budget: {brief.budget}
+- Daily budget: ${brief.budget_usd_per_day} USD
 - Pace: {brief.pace}{avoid_str}
 
 Create a realistic, time-blocked itinerary. For each stop assign at least one reason code that genuinely applies:
@@ -99,7 +103,7 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict]) -> tuple[str, str]:
             "destination": brief.destination,
             "days": brief.days,
             "interests": brief.interests,
-            "budget": brief.budget,
+            "budget": f"${brief.budget_usd_per_day}/day",
             "pace": brief.pace,
             "avoid": brief.avoid,
         })
@@ -155,6 +159,33 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
                         await asyncio.sleep(0.08)
 
             trip_id, itinerary_id = _save_to_supabase(brief, collected_stops)
+
+            # Verification phase — Foursquare
+            dest_lat: float | None = None
+            dest_lon: float | None = None
+            if collected_stops:
+                yield f"data: {json.dumps({'type': 'verifying', 'total': len(collected_stops)})}\n\n"
+                db = get_db()
+                for i, stop in enumerate(collected_stops):
+                    place = await search_place(stop["name"], brief.destination)
+                    if place and place.get("place_id"):
+                        db.table("stops").update({
+                            "place_id": place["place_id"],
+                            "verified": True,
+                        }).eq("itinerary_id", itinerary_id).eq("position", i).execute()
+                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'place_id': place['place_id'], 'verified': True, 'hours': place.get('hours_display'), 'open_now': place.get('open_now')})}\n\n"
+                        # Capture coordinates from first verified stop for accurate weather
+                        if dest_lat is None and place.get("lat") and place.get("lon"):
+                            dest_lat = place["lat"]
+                            dest_lon = place["lon"]
+                    await asyncio.sleep(0.05)
+
+            # Weather phase — Open-Meteo (use Google Places coords if available)
+            start = brief.start_date or (date.today() + timedelta(days=7)).isoformat()
+            forecasts = await get_trip_weather(brief.destination, start, brief.days, dest_lat, dest_lon)
+            if forecasts:
+                yield f"data: {json.dumps({'type': 'weather', 'forecasts': forecasts})}\n\n"
+
             yield f"data: {json.dumps({'type': 'done', 'trip_id': trip_id, 'itinerary_id': itinerary_id})}\n\n"
 
         except Exception as e:

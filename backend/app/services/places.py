@@ -1,0 +1,47 @@
+import httpx
+from ..config import settings
+
+_PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
+_FIELD_MASK = "places.id,places.location,places.regularOpeningHours"
+
+
+async def search_place(name: str, destination: str) -> dict | None:
+    """Search Google Places for a place by name near a destination.
+    Returns place_id, open_now flag, and lat/lon for weather accuracy."""
+    if not settings.google_places_api_key:
+        return None
+
+    headers = {
+        "X-Goog-Api-Key": settings.google_places_api_key,
+        "X-Goog-FieldMask": _FIELD_MASK,
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.post(
+                _PLACES_URL,
+                headers=headers,
+                json={"textQuery": f"{name} {destination}"},
+            )
+            r.raise_for_status()
+            data = r.json()
+    except Exception:
+        return None
+
+    places = data.get("places", [])
+    if not places:
+        return None
+
+    place = places[0]
+    location = place.get("location", {})
+    hours = place.get("regularOpeningHours", {})
+    weekday = hours.get("weekdayDescriptions", [])
+
+    return {
+        "place_id": place.get("id", ""),
+        "hours_display": weekday[0] if weekday else None,
+        "open_now": hours.get("openNow"),
+        "lat": location.get("latitude"),
+        "lon": location.get("longitude"),
+    }

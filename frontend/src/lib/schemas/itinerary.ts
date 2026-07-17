@@ -25,8 +25,9 @@ export type Stop = z.infer<typeof StopSchema>;
 export const TripBriefSchema = z.object({
   destination: z.string().min(2, "Enter a destination"),
   days: z.coerce.number().int().min(1).max(14),
+  start_date: z.string().optional(),
   interests: z.array(z.string()).min(1, "Pick at least one interest"),
-  budget: z.enum(["budget", "mid-range", "luxury"]),
+  budget_usd_per_day: z.coerce.number().int().min(0).max(500),
   pace: z.enum(["relaxed", "moderate", "packed"]),
   avoid: z.array(z.string()),
 });
