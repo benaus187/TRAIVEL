@@ -394,6 +394,16 @@ export default function PlanPage() {
                       ☁ alt: {stop.weather_alternate}
                     </p>
                   )}
+                  {stop.booking_url && (
+                    <a
+                      href={stop.booking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors w-fit"
+                    >
+                      ↗ map &amp; tickets
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             ))}

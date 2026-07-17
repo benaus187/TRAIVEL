@@ -15,11 +15,10 @@ export type WeatherDay = {
 };
 
 export type TrendItem = {
-  text: string;
-  score: number;
-  upvotes: number;
-  comments: number;
-  source: "reddit" | "wikipedia" | "hackernews";
+  name: string;
+  rating?: number;
+  review_count?: number;
+  summary?: string;
 };
 
 export function useItineraryStream() {
@@ -86,7 +85,8 @@ export function useItineraryStream() {
                   ? {
                       ...s,
                       verified: event.verified as boolean,
-                      place_id: event.place_id as string,
+                      place_id: event.place_id as string | null,
+                      booking_url: event.booking_url as string | null,
                     }
                   : s
               )
