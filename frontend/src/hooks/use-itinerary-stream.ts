@@ -3,18 +3,29 @@
 import { useState, useCallback } from "react";
 import { Stop, StopSchema, TripBrief } from "@/lib/schemas/itinerary";
 
-type StreamState = "idle" | "streaming" | "done" | "error";
+type StreamState = "idle" | "streaming" | "verifying" | "done" | "error";
+
+export type WeatherDay = {
+  date: string;
+  condition: string;
+  temp_max: number | null;
+  precipitation: number | null;
+  bad_weather: boolean;
+  location?: string;
+};
 
 export function useItineraryStream() {
   const [stops, setStops] = useState<Stop[]>([]);
   const [state, setState] = useState<StreamState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
+  const [weather, setWeather] = useState<WeatherDay[] | null>(null);
 
   const generate = useCallback(async (brief: TripBrief) => {
     setStops([]);
     setError(null);
     setTripId(null);
+    setWeather(null);
     setState("streaming");
 
     try {
@@ -48,22 +59,36 @@ export function useItineraryStream() {
           const raw = line.slice(6).trim();
           if (!raw) continue;
 
-          const event = JSON.parse(raw) as {
-            type: string;
-            stop?: unknown;
-            message?: string;
-          };
+          const event = JSON.parse(raw) as Record<string, unknown>;
 
           if (event.type === "stop" && event.stop) {
             const parsed = StopSchema.safeParse(event.stop);
             if (parsed.success) {
               setStops((prev) => [...prev, parsed.data]);
             }
+          } else if (event.type === "verifying") {
+            setState("verifying");
+          } else if (event.type === "verify") {
+            const idx = event.index as number;
+            setStops((prev) =>
+              prev.map((s, i) =>
+                i === idx
+                  ? {
+                      ...s,
+                      verified: event.verified as boolean,
+                      place_id: event.place_id as string,
+                    }
+                  : s
+              )
+            );
+          } else if (event.type === "weather") {
+            console.log("[weather event]", event.forecasts);
+            setWeather(event.forecasts as WeatherDay[]);
           } else if (event.type === "done") {
             if (event.trip_id) setTripId(event.trip_id as string);
             setState("done");
           } else if (event.type === "error") {
-            throw new Error(event.message ?? "Unknown error");
+            throw new Error((event.message as string) ?? "Unknown error");
           }
         }
       }
@@ -78,7 +103,8 @@ export function useItineraryStream() {
     setState("idle");
     setError(null);
     setTripId(null);
+    setWeather(null);
   }, []);
 
-  return { stops, state, error, tripId, generate, reset };
+  return { stops, state, error, tripId, weather, generate, reset };
 }
