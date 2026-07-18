@@ -26,23 +26,28 @@ export function useItineraryStream() {
   const [state, setState] = useState<StreamState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
+  const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
   const [trends, setTrends] = useState<TrendItem[] | null>(null);
 
-  const generate = useCallback(async (brief: TripBrief) => {
+  const generate = useCallback(async (brief: TripBrief, accessToken?: string | null) => {
     setStops([]);
     setError(null);
     setTripId(null);
+    setShareSlug(null);
     setWeather(null);
     setTrends(null);
     setState("streaming");
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/itinerary/generate`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(brief),
         }
       );
@@ -99,6 +104,7 @@ export function useItineraryStream() {
             setWeather(event.forecasts as WeatherDay[]);
           } else if (event.type === "done") {
             if (event.trip_id) setTripId(event.trip_id as string);
+            if (event.share_slug) setShareSlug(event.share_slug as string);
             setState("done");
           } else if (event.type === "error") {
             throw new Error((event.message as string) ?? "Unknown error");
@@ -116,9 +122,10 @@ export function useItineraryStream() {
     setState("idle");
     setError(null);
     setTripId(null);
+    setShareSlug(null);
     setWeather(null);
     setTrends(null);
   }, []);
 
-  return { stops, state, error, tripId, weather, trends, generate, reset };
+  return { stops, state, error, tripId, shareSlug, weather, trends, generate, reset };
 }
