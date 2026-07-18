@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
+import { useAuth } from "@/hooks/use-auth";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import { TrendPanel } from "@/components/trend-panel";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,8 @@ const PRESET_INTERESTS = [
 type GeoSuggestion = { name: string; admin1: string; country: string };
 
 export default function PlanPage() {
-  const { stops, state, error, tripId, weather, trends, generate, reset } = useItineraryStream();
+  const { stops, state, error, tripId, shareSlug, weather, trends, generate, reset } = useItineraryStream();
+  const { user, getAccessToken } = useAuth();
   const [brief, setBrief] = useState<Partial<TripBrief>>({
     days: 2,
     budget_usd_per_day: 100,
@@ -134,7 +136,7 @@ export default function PlanPage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = TripBriefSchema.safeParse(brief);
     if (!parsed.success) {
@@ -142,7 +144,8 @@ export default function PlanPage() {
       return;
     }
     setActiveDay(1);
-    generate(parsed.data);
+    const token = await getAccessToken();
+    generate(parsed.data, token);
   }
 
   const isStreaming = state === "streaming" || state === "verifying";
@@ -372,7 +375,21 @@ export default function PlanPage() {
                 </span>
               )}
               {state === "done" && tripId && (
-                <span className="font-mono text-xs text-[#1f7a45]">✓ saved</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-[#1f7a45]">✓ saved</span>
+                  {shareSlug ? (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(`${window.location.origin}/trips/${shareSlug}`)}
+                      className="font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors"
+                    >
+                      copy share link
+                    </button>
+                  ) : !user ? (
+                    <a href="/login" className="font-mono text-xs text-muted-foreground hover:text-foreground underline">
+                      sign in to share
+                    </a>
+                  ) : null}
+                </div>
               )}
             </div>
             <Separator />

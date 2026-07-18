@@ -1,9 +1,12 @@
 import asyncio
+import base64
 import json
+import secrets
+import string
 import urllib.parse
 from datetime import date, timedelta
 import anthropic
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -13,6 +16,23 @@ from ..services.places import search_place, discover_popular_places
 from ..services.weather import get_trip_weather
 
 router = APIRouter(prefix="/api/itinerary", tags=["itinerary"])
+
+
+def _extract_user_id(authorization: str | None) -> str | None:
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    try:
+        payload_b64 = authorization[7:].split(".")[1]
+        payload_b64 += "=" * (4 - len(payload_b64) % 4)
+        payload = json.loads(base64.b64decode(payload_b64))
+        return payload.get("sub")
+    except Exception:
+        return None
+
+
+def _generate_share_slug() -> str:
+    alphabet = string.ascii_lowercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(10))
 
 _client: anthropic.Anthropic | None = None
 
@@ -134,26 +154,34 @@ Include 4–6 stops per day. Be specific: use real place names, not generic desc
 For every stop description, always include an estimated cost at the end (e.g. "~$25/person", "Free entry", "~$120 for the tour"). This helps the traveller budget their day."""
 
 
-def _save_to_supabase(brief: TripBrief, stops: list[dict]) -> tuple[str, str]:
+def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None = None) -> tuple[str, str, str | None]:
     db = get_db()
 
-    trip = (
-        db.table("trips")
-        .insert({
-            "destination": brief.destination,
-            "days": brief.days,
-            "interests": brief.interests,
-            "budget": f"${brief.budget_usd_per_day}/day",
-            "pace": brief.pace,
-            "avoid": brief.avoid,
-        })
-        .execute()
-    )
+    trip_row: dict = {
+        "destination": brief.destination,
+        "days": brief.days,
+        "interests": brief.interests,
+        "budget": f"${brief.budget_usd_per_day}/day",
+        "pace": brief.pace,
+        "avoid": brief.avoid,
+    }
+    effective_user_id = user_id
+    if user_id:
+        trip_row["user_id"] = user_id
+
+    try:
+        trip = db.table("trips").insert(trip_row).execute()
+    except Exception:
+        # FK violation: public.users row missing for this user — save anonymously
+        trip_row.pop("user_id", None)
+        effective_user_id = None
+        trip = db.table("trips").insert(trip_row).execute()
     trip_id: str = trip.data[0]["id"]
 
+    share_slug: str | None = _generate_share_slug() if effective_user_id else None
     itinerary = (
         db.table("itineraries")
-        .insert({"trip_id": trip_id, "version": 1})
+        .insert({"trip_id": trip_id, "version": 1, "share_slug": share_slug})
         .execute()
     )
     itinerary_id: str = itinerary.data[0]["id"]
@@ -175,11 +203,13 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict]) -> tuple[str, str]:
     ]
     db.table("stops").insert(rows).execute()
 
-    return trip_id, itinerary_id
+    return trip_id, itinerary_id, share_slug
 
 
 @router.post("/generate")
-async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
+async def generate_itinerary(brief: TripBrief, authorization: str | None = Header(default=None)) -> StreamingResponse:
+    user_id = _extract_user_id(authorization)
+
     async def stream():
         try:
             client = get_client()
@@ -211,7 +241,7 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
                         yield f"data: {json.dumps({'type': 'stop', 'stop': stop})}\n\n"
                         await asyncio.sleep(0.08)
 
-            trip_id, itinerary_id = _save_to_supabase(brief, collected_stops)
+            trip_id, itinerary_id, share_slug = _save_to_supabase(brief, collected_stops, user_id)
 
             # 3. Verification phase — Google Places per stop + build booking URLs
             dest_lat: float | None = None
@@ -254,7 +284,7 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
             if weather_forecast:
                 yield f"data: {json.dumps({'type': 'weather', 'forecasts': weather_forecast})}\n\n"
 
-            yield f"data: {json.dumps({'type': 'done', 'trip_id': trip_id, 'itinerary_id': itinerary_id})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'trip_id': trip_id, 'itinerary_id': itinerary_id, 'share_slug': share_slug})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
