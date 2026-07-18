@@ -11,6 +11,7 @@ export const REASON_CODES = [
 export type ReasonCode = (typeof REASON_CODES)[number];
 
 export const StopSchema = z.object({
+  day: z.number().int().optional(),
   time: z.string(),
   name: z.string(),
   description: z.string(),

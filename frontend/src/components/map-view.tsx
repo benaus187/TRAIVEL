@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import Map, { Marker, Source, Layer, MapRef } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Stop } from "@/lib/schemas/itinerary";
@@ -43,8 +43,8 @@ export function MapView({ stops }: { stops: Stop[] }) {
     [stopsWithCoords]
   );
 
-  // Fit map to all stops once coords are known
-  useEffect(() => {
+  // Fit map to all stops after tiles load — avoids jump from initialViewState → fitBounds
+  const handleMapLoad = useCallback(() => {
     if (!mapRef.current || stopsWithCoords.length < 2) return;
     const lons = stopsWithCoords.map((s) => s.lon);
     const lats = stopsWithCoords.map((s) => s.lat);
@@ -73,6 +73,7 @@ export function MapView({ stops }: { stops: Stop[] }) {
         }}
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/light-v11"
+        onLoad={handleMapLoad}
       >
         {stopsWithCoords.length >= 2 && (
           <Source id="route" type="geojson" data={geojson}>
