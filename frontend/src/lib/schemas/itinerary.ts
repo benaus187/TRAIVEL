@@ -11,6 +11,7 @@ export const REASON_CODES = [
 export type ReasonCode = (typeof REASON_CODES)[number];
 
 export const StopSchema = z.object({
+  day: z.number().int().optional(),
   time: z.string(),
   name: z.string(),
   description: z.string(),
@@ -19,6 +20,8 @@ export const StopSchema = z.object({
   verified: z.boolean(),
   weather_alternate: z.string().nullable().optional(),
   booking_url: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lon: z.number().nullable().optional(),
 });
 
 export type Stop = z.infer<typeof StopSchema>;

@@ -87,6 +87,8 @@ export function useItineraryStream() {
                       verified: event.verified as boolean,
                       place_id: event.place_id as string | null,
                       booking_url: event.booking_url as string | null,
+                      lat: event.lat as number | null,
+                      lon: event.lon as number | null,
                     }
                   : s
               )

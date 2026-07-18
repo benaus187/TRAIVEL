@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
@@ -8,6 +9,11 @@ import { TrendPanel } from "@/components/trend-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+
+const MapView = dynamic(
+  () => import("@/components/map-view").then((m) => m.MapView),
+  { ssr: false }
+);
 
 const PRESET_INTERESTS = [
   "food & drink",
@@ -62,7 +68,7 @@ export default function PlanPage() {
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`
       );
       const data = await res.json();
-      const results: GeoSuggestion[] = (data.results ?? []).map((r: Record<string, string>) => ({
+      const results: GeoSuggestion[] = ((data.results ?? []) as Record<string, string>[]).map((r) => ({
         name: r.name ?? "",
         admin1: r.admin1 ?? "",
         country: r.country ?? "",
@@ -135,12 +141,24 @@ export default function PlanPage() {
       alert(parsed.error.issues[0].message);
       return;
     }
+    setActiveDay(1);
     generate(parsed.data);
   }
 
   const isStreaming = state === "streaming" || state === "verifying";
   const hasResult = stops.length > 0;
   const presetSelected = (brief.interests ?? []).filter((i) => !customInterests.includes(i));
+
+  // Day pagination
+  const totalDays = useMemo(() => {
+    const days = stops.map((s) => s.day ?? 1);
+    return days.length ? Math.max(...days) : 1;
+  }, [stops]);
+  const [activeDay, setActiveDay] = useState(1);
+  const dayStops = useMemo(
+    () => stops.filter((s) => (s.day ?? 1) === activeDay),
+    [stops, activeDay]
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 items-start">
@@ -338,6 +356,7 @@ export default function PlanPage() {
 
         {hasResult && (
           <div className="space-y-3">
+            {/* Header */}
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
                 {brief.destination} · {brief.days} day{(brief.days ?? 1) > 1 ? "s" : ""}
@@ -353,18 +372,42 @@ export default function PlanPage() {
                 </span>
               )}
               {state === "done" && tripId && (
-                <span className="font-mono text-xs text-[#1f7a45]">
-                  ✓ saved
-                </span>
+                <span className="font-mono text-xs text-[#1f7a45]">✓ saved</span>
               )}
             </div>
             <Separator />
+
+            {/* Trend + Weather (always visible) */}
             {trends && trends.length > 0 && (
               <TrendPanel trends={trends} destination={brief.destination ?? ""} />
             )}
-            {weather && <WeatherBanner forecasts={weather} />}
-            {stops.map((stop, i) => (
-              <Card key={i} className="shadow-none">
+            {weather && <WeatherBanner forecasts={weather} activeDay={activeDay} />}
+
+            {/* Day tabs — only show when >1 day */}
+            {totalDays > 1 && (
+              <div className="flex gap-1.5 pt-1">
+                {Array.from({ length: totalDays }, (_, i) => i + 1).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setActiveDay(d)}
+                    className={`px-3 py-1 rounded-md text-xs font-mono border transition-colors ${
+                      d === activeDay
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-background text-muted-foreground border-border hover:border-foreground"
+                    }`}
+                  >
+                    Day {d}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Map for active day */}
+            {state === "done" && <MapView stops={dayStops} />}
+
+            {/* Stop cards for active day */}
+            {dayStops.map((stop, i) => (
+              <Card key={`${activeDay}-${i}`} className="shadow-none">
                 <CardContent className="py-4 px-5 space-y-2">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-0.5">
@@ -414,7 +457,7 @@ export default function PlanPage() {
   );
 }
 
-function WeatherBanner({ forecasts }: { forecasts: WeatherDay[] }) {
+function WeatherBanner({ forecasts, activeDay }: { forecasts: WeatherDay[]; activeDay: number }) {
   const location = forecasts[0]?.location;
   return (
     <div className="space-y-1.5 py-1">
@@ -424,21 +467,26 @@ function WeatherBanner({ forecasts }: { forecasts: WeatherDay[] }) {
         </p>
       )}
       <div className="flex gap-2 flex-wrap">
-        {forecasts.map((day) => (
-          <div
-            key={day.date}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-mono ${
-              day.bad_weather
-                ? "border-amber-200 bg-amber-50 text-amber-700"
-                : "border-border bg-muted/40 text-muted-foreground"
-            }`}
-          >
-            <span>{day.date.slice(5)}</span>
-            <span>{day.condition}</span>
-            {day.temp_max !== null && <span>{Math.round(day.temp_max)}°C</span>}
-            {day.bad_weather && <span>⚠</span>}
-          </div>
-        ))}
+        {forecasts.map((day, i) => {
+          const isActive = i + 1 === activeDay;
+          return (
+            <div
+              key={day.date}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-mono transition-colors ${
+                day.bad_weather
+                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                  : isActive
+                  ? "border-foreground bg-muted text-foreground"
+                  : "border-border bg-muted/40 text-muted-foreground"
+              }`}
+            >
+              <span>{day.date.slice(5)}</span>
+              <span>{day.condition}</span>
+              {day.temp_max !== null && <span>{Math.round(day.temp_max)}°C</span>}
+              {day.bad_weather && <span>⚠</span>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

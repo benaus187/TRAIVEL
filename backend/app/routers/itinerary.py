@@ -35,6 +35,7 @@ ITINERARY_TOOL: anthropic.types.ToolParam = {
                 "items": {
                     "type": "object",
                     "properties": {
+                        "day": {"type": "integer", "description": "Day number starting from 1, e.g. 1 for Day 1, 2 for Day 2"},
                         "time": {"type": "string", "description": "Time in HH:MM format, e.g. 09:00"},
                         "name": {"type": "string", "description": "Name of the place or activity"},
                         "description": {"type": "string", "description": "1-2 sentence description of what to do and why, always ending with an estimated cost in USD (e.g. '~$15/person', 'Free', '~$80–120 for the activity')"},
@@ -56,7 +57,7 @@ ITINERARY_TOOL: anthropic.types.ToolParam = {
                         "verified": {"type": "boolean", "description": "Always false at generation time — set by verification layer"},
                         "weather_alternate": {"type": "string", "description": "Indoor alternative if weather is bad, or null"},
                     },
-                    "required": ["time", "name", "description", "reason_codes", "verified"],
+                    "required": ["day", "time", "name", "description", "reason_codes", "verified"],
                 },
             }
         },
@@ -120,12 +121,14 @@ Traveller profile:
 - Daily budget: ${brief.budget_usd_per_day} USD
 - Pace: {brief.pace}{avoid_str}{places_str}{weather_str}
 
-Create a realistic, time-blocked itinerary. For each stop assign at least one reason code that genuinely applies:
-- "social momentum" — trending or highly talked-about right now
-- "transport fit" — easy to reach from previous stop
-- "food fit" — a meal or drink stop that matches the interests/budget
-- "budget fit" — free or low-cost, good for the stated budget
-- "weather alternate ready" — has a nearby indoor fallback
+Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). For each stop:
+- Set the `day` field to 1 for Day 1, 2 for Day 2, etc. (required)
+- Assign at least one reason code that genuinely applies:
+  - "social momentum" — trending or highly talked-about right now
+  - "transport fit" — easy to reach from previous stop
+  - "food fit" — a meal or drink stop that matches the interests/budget
+  - "budget fit" — free or low-cost, good for the stated budget
+  - "weather alternate ready" — has a nearby indoor fallback
 
 Include 4–6 stops per day. Be specific: use real place names, not generic descriptions.
 For every stop description, always include an estimated cost at the end (e.g. "~$25/person", "Free entry", "~$120 for the tour"). This helps the traveller budget their day."""
@@ -159,6 +162,7 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict]) -> tuple[str, str]:
         {
             "itinerary_id": itinerary_id,
             "position": i,
+            "day": s.get("day", 1),
             "time": s.get("time", ""),
             "name": s.get("name", ""),
             "description": s.get("description", ""),
@@ -223,18 +227,26 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
                         update: dict = {"booking_url": booking_url}
                         verified = False
                         place_id = None
+                        stop_lat: float | None = None
+                        stop_lon: float | None = None
                         if place and place.get("place_id"):
                             place_id = place["place_id"]
                             verified = True
+                            stop_lat = place.get("lat")
+                            stop_lon = place.get("lon")
                             update["place_id"] = place_id
                             update["verified"] = True
-                            if dest_lat is None and place.get("lat") and place.get("lon"):
-                                dest_lat, dest_lon = place["lat"], place["lon"]
+                            if stop_lat is not None:
+                                update["lat"] = stop_lat
+                            if stop_lon is not None:
+                                update["lon"] = stop_lon
+                            if dest_lat is None and stop_lat and stop_lon:
+                                dest_lat, dest_lon = stop_lat, stop_lon
                         db.table("stops").update(update).eq("itinerary_id", itinerary_id).eq("position", i).execute()
-                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'verified': verified, 'place_id': place_id, 'booking_url': booking_url})}\n\n"
+                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'verified': verified, 'place_id': place_id, 'booking_url': booking_url, 'lat': stop_lat, 'lon': stop_lon})}\n\n"
                     except Exception:
                         pass
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.5)
 
             # 4. Emit weather (already fetched — re-geocode with verified coords if available)
             if weather_forecast is None and (dest_lat is not None):
