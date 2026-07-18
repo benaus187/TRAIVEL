@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
@@ -8,6 +9,11 @@ import { TrendPanel } from "@/components/trend-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+
+const MapView = dynamic(
+  () => import("@/components/map-view").then((m) => m.MapView),
+  { ssr: false }
+);
 
 const PRESET_INTERESTS = [
   "food & drink",
@@ -62,7 +68,7 @@ export default function PlanPage() {
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`
       );
       const data = await res.json();
-      const results: GeoSuggestion[] = (data.results ?? []).map((r: Record<string, string>) => ({
+      const results: GeoSuggestion[] = ((data.results ?? []) as Record<string, string>[]).map((r) => ({
         name: r.name ?? "",
         admin1: r.admin1 ?? "",
         country: r.country ?? "",
@@ -363,6 +369,9 @@ export default function PlanPage() {
               <TrendPanel trends={trends} destination={brief.destination ?? ""} />
             )}
             {weather && <WeatherBanner forecasts={weather} />}
+            {state === "done" && (
+              <MapView stops={stops} />
+            )}
             {stops.map((stop, i) => (
               <Card key={i} className="shadow-none">
                 <CardContent className="py-4 px-5 space-y-2">

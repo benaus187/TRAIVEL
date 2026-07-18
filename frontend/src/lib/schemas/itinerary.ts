@@ -19,6 +19,8 @@ export const StopSchema = z.object({
   verified: z.boolean(),
   weather_alternate: z.string().nullable().optional(),
   booking_url: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lon: z.number().nullable().optional(),
 });
 
 export type Stop = z.infer<typeof StopSchema>;

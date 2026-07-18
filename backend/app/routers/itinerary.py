@@ -223,15 +223,23 @@ async def generate_itinerary(brief: TripBrief) -> StreamingResponse:
                         update: dict = {"booking_url": booking_url}
                         verified = False
                         place_id = None
+                        stop_lat: float | None = None
+                        stop_lon: float | None = None
                         if place and place.get("place_id"):
                             place_id = place["place_id"]
                             verified = True
+                            stop_lat = place.get("lat")
+                            stop_lon = place.get("lon")
                             update["place_id"] = place_id
                             update["verified"] = True
-                            if dest_lat is None and place.get("lat") and place.get("lon"):
-                                dest_lat, dest_lon = place["lat"], place["lon"]
+                            if stop_lat is not None:
+                                update["lat"] = stop_lat
+                            if stop_lon is not None:
+                                update["lon"] = stop_lon
+                            if dest_lat is None and stop_lat and stop_lon:
+                                dest_lat, dest_lon = stop_lat, stop_lon
                         db.table("stops").update(update).eq("itinerary_id", itinerary_id).eq("position", i).execute()
-                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'verified': verified, 'place_id': place_id, 'booking_url': booking_url})}\n\n"
+                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'verified': verified, 'place_id': place_id, 'booking_url': booking_url, 'lat': stop_lat, 'lon': stop_lon})}\n\n"
                     except Exception:
                         pass
                     await asyncio.sleep(0.1)
