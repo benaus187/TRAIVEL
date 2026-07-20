@@ -4,8 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase";
-import { ReasonCodeChip } from "@/components/reason-code-chip";
-import { Card, CardContent } from "@/components/ui/card";
+import { StopCard, TransitConnector } from "@/components/stop-card";
 import { Separator } from "@/components/ui/separator";
 import { StopSchema } from "@/lib/schemas/itinerary";
 import type { Stop } from "@/lib/schemas/itinerary";
@@ -112,39 +111,12 @@ export default function SharedTripPage() {
 
       <MapView stops={dayStops} />
 
-      <div className="space-y-3">
+      <div className="space-y-0">
         {dayStops.map((stop, i) => (
-          <Card key={i} className="shadow-none">
-            <CardContent className="py-4 px-5 space-y-2">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-0.5">
-                  <p className="font-mono text-xs text-muted-foreground">{stop.time}</p>
-                  <p className="font-semibold text-sm leading-snug">{stop.name}</p>
-                </div>
-                {stop.verified && (
-                  <span className="shrink-0 text-[10px] font-mono text-[#1f7a45] border border-[#1f7a45]/30 rounded-full px-2 py-0.5">
-                    ✓ verified
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{stop.description}</p>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {stop.reason_codes.map((code) => (
-                  <ReasonCodeChip key={code} code={code} />
-                ))}
-              </div>
-              {stop.booking_url && (
-                <a
-                  href={stop.booking_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors w-fit"
-                >
-                  ↗ map &amp; tickets
-                </a>
-              )}
-            </CardContent>
-          </Card>
+          <div key={i}>
+            {i > 0 && <TransitConnector from={dayStops[i - 1]} to={stop} />}
+            <StopCard stop={stop} />
+          </div>
         ))}
       </div>
 

@@ -6,6 +6,7 @@ import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { useAuth } from "@/hooks/use-auth";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
+import { StopCard, TransitConnector } from "@/components/stop-card";
 import { TrendPanel } from "@/components/trend-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,6 +46,7 @@ export default function PlanPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [destInput, setDestInput] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Custom interests state
@@ -65,9 +67,12 @@ export default function PlanPage() {
 
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) { setSuggestions([]); return; }
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
     try {
       const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`,
+        { signal: abortRef.current.signal }
       );
       const data = await res.json();
       const results: GeoSuggestion[] = ((data.results ?? []) as Record<string, string>[]).map((r) => ({
@@ -77,8 +82,8 @@ export default function PlanPage() {
       })).filter((r) => r.name);
       setSuggestions(results);
       setShowSuggestions(results.length > 0);
-    } catch {
-      setSuggestions([]);
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") setSuggestions([]);
     }
   }, []);
 
@@ -357,6 +362,21 @@ export default function PlanPage() {
           </div>
         )}
 
+        {/* Progress indicator — shown from first click until first stop arrives */}
+        {(state === "streaming" || state === "verifying") && !hasResult && (
+          <div className="flex flex-col gap-3 pt-8">
+            <p className="font-mono text-xs text-muted-foreground animate-pulse">
+              {`Discovering places in ${brief.destination ?? "your destination"}…`}
+            </p>
+            <div className="h-1 w-full bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full progress-indeterminate"
+                style={{ backgroundColor: "var(--coral)" }}
+              />
+            </div>
+          </div>
+        )}
+
         {hasResult && (
           <div className="space-y-3">
             {/* Header */}
@@ -366,12 +386,17 @@ export default function PlanPage() {
               </p>
               {state === "streaming" && (
                 <span className="font-mono text-xs text-muted-foreground animate-pulse">
-                  generating…
+                  {stops.length === 0
+                    ? `Discovering places in ${brief.destination ?? "your destination"}…`
+                    : `Planning itinerary… ${stops.length} stop${stops.length !== 1 ? "s" : ""} so far`}
                 </span>
               )}
               {state === "verifying" && (
                 <span className="font-mono text-xs text-muted-foreground animate-pulse">
-                  verifying stops…
+                  {(() => {
+                    const verified = stops.filter((s) => s.verified).length;
+                    return `Verifying stop ${verified + 1} of ${stops.length}…`;
+                  })()}
                 </span>
               )}
               {state === "done" && tripId && (
@@ -392,6 +417,27 @@ export default function PlanPage() {
                 </div>
               )}
             </div>
+
+            {/* Progress bar */}
+            {(state === "streaming" || state === "verifying") && (
+              <div className="h-1 w-full bg-border rounded-full overflow-hidden">
+                {state === "streaming" ? (
+                  <div
+                    className="h-full rounded-full progress-indeterminate"
+                    style={{ backgroundColor: "var(--coral)" }}
+                  />
+                ) : (
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      backgroundColor: "var(--coral)",
+                      width: `${Math.max(45, 45 + (stops.filter((s) => s.verified).length / Math.max(stops.length, 1)) * 52)}%`,
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
             <Separator />
 
             {/* Trend + Weather (always visible) */}
@@ -424,48 +470,10 @@ export default function PlanPage() {
 
             {/* Stop cards for active day */}
             {dayStops.map((stop, i) => (
-              <Card key={`${activeDay}-${i}`} className="shadow-none">
-                <CardContent className="py-4 px-5 space-y-2">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-0.5">
-                      <p className="font-mono text-xs text-muted-foreground">
-                        {stop.time}
-                      </p>
-                      <p className="font-semibold text-sm leading-snug">
-                        {stop.name}
-                      </p>
-                    </div>
-                    {stop.verified && (
-                      <span className="shrink-0 text-[10px] font-mono text-[#1f7a45] border border-[#1f7a45]/30 rounded-full px-2 py-0.5">
-                        ✓ verified
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {stop.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {stop.reason_codes.map((code) => (
-                      <ReasonCodeChip key={code} code={code} />
-                    ))}
-                  </div>
-                  {stop.weather_alternate && (
-                    <p className="text-xs text-muted-foreground font-mono">
-                      ☁ alt: {stop.weather_alternate}
-                    </p>
-                  )}
-                  {stop.booking_url && (
-                    <a
-                      href={stop.booking_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors w-fit"
-                    >
-                      ↗ map &amp; tickets
-                    </a>
-                  )}
-                </CardContent>
-              </Card>
+              <div key={`${activeDay}-${i}`} className="stop-card-enter">
+                {i > 0 && <TransitConnector from={dayStops[i - 1]} to={stop} />}
+                <StopCard stop={stop} />
+              </div>
             ))}
           </div>
         )}
