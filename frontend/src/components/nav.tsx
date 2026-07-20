@@ -27,7 +27,7 @@ export function Nav() {
                   My trips
                 </Link>
                 <button
-                  onClick={() => signOut().then(() => router.push("/"))}
+                  onClick={() => signOut().then(() => router.push("/")).catch(() => router.push("/"))}
                   className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
                 >
                   sign out
@@ -52,7 +52,7 @@ function Wordmark() {
   return (
     <span className="font-semibold text-lg tracking-tight select-none">
       TR
-      <span className="font-black text-foreground border-b-2 border-foreground pb-[1px]">
+      <span className="font-black pb-[1px]" style={{ color: "var(--coral)", borderBottom: "2px solid var(--coral)" }}>
         AI
       </span>
       VEL
