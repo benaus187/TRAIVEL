@@ -28,10 +28,19 @@ const PRESET_INTERESTS = [
   "street food",
 ];
 
+const PRESET_AVOID = [
+  "crowded places",
+  "tourist traps",
+  "nightlife",
+  "street food",
+  "steep hills",
+  "early mornings",
+];
+
 type GeoSuggestion = { name: string; admin1: string; country: string };
 
 export default function PlanPage() {
-  const { stops, state, error, tripId, shareSlug, weather, trends, generate, reset } = useItineraryStream();
+  const { stops, state, error, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
   const [brief, setBrief] = useState<Partial<TripBrief>>({
     days: 2,
@@ -54,6 +63,12 @@ export default function PlanPage() {
   const [customInterests, setCustomInterests] = useState<string[]>([]);
   const [showCustomInput, setShowCustomInput] = useState(false);
 
+  // Form error state
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Ref to last submitted brief (for retry)
+  const lastSubmittedBriefRef = useRef<TripBrief | null>(null);
+
   // Close suggestions on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -64,6 +79,11 @@ export default function PlanPage() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // Clear form error when user edits brief
+  useEffect(() => {
+    setFormError(null);
+  }, [brief]);
 
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) { setSuggestions([]); return; }
@@ -141,13 +161,26 @@ export default function PlanPage() {
     }
   }
 
+  function toggleAvoid(item: string) {
+    setFormError(null);
+    setBrief((prev) => {
+      const list = prev.avoid ?? [];
+      return {
+        ...prev,
+        avoid: list.includes(item) ? list.filter((i) => i !== item) : [...list, item],
+      };
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = TripBriefSchema.safeParse(brief);
     if (!parsed.success) {
-      alert(parsed.error.issues[0].message);
+      setFormError(parsed.error.issues[0].message);
       return;
     }
+    setFormError(null);
+    lastSubmittedBriefRef.current = parsed.data;
     setActiveDay(1);
     const token = await getAccessToken();
     generate(parsed.data, token);
@@ -335,6 +368,33 @@ export default function PlanPage() {
             />
           </Field>
 
+          {/* Avoid */}
+          <Field label="Avoid">
+            <div className="flex flex-wrap gap-2">
+              {PRESET_AVOID.map((item) => {
+                const active = (brief.avoid ?? []).includes(item);
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => toggleAvoid(item)}
+                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
+                      active
+                        ? "bg-destructive/10 text-destructive border-destructive/30"
+                        : "bg-background text-muted-foreground border-border hover:border-foreground"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {formError && (
+            <p className="text-xs text-destructive font-mono">{formError}</p>
+          )}
+
           <div className="flex gap-2 pt-1">
             <Button type="submit" disabled={isStreaming} className="flex-1">
               {isStreaming ? "Generating…" : hasResult ? "Regenerate" : "Generate itinerary"}
@@ -357,8 +417,21 @@ export default function PlanPage() {
         )}
 
         {state === "error" && (
-          <div className="p-4 rounded-md bg-destructive/10 text-destructive text-sm">
-            {error}
+          <div className="p-4 rounded-md bg-destructive/10 text-destructive text-sm space-y-3">
+            <p>{error}</p>
+            {lastSubmittedBriefRef.current && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const token = await getAccessToken();
+                  generate(lastSubmittedBriefRef.current!, token);
+                }}
+                className="text-xs font-mono border-destructive/30 text-destructive hover:bg-destructive/10"
+              >
+                Retry
+              </Button>
+            )}
           </div>
         )}
 
@@ -374,6 +447,20 @@ export default function PlanPage() {
                 style={{ backgroundColor: "var(--coral)" }}
               />
             </div>
+            {elapsedSeconds >= 20 && (
+              <div className="flex items-center gap-3">
+                <p className="font-mono text-xs text-amber-600">Taking longer than usual…</p>
+                {elapsedSeconds >= 40 && (
+                  <button
+                    type="button"
+                    onClick={abort}
+                    className="font-mono text-xs text-destructive border border-destructive/30 rounded px-2 py-0.5 hover:bg-destructive/10 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -420,20 +507,36 @@ export default function PlanPage() {
 
             {/* Progress bar */}
             {(state === "streaming" || state === "verifying") && (
-              <div className="h-1 w-full bg-border rounded-full overflow-hidden">
-                {state === "streaming" ? (
-                  <div
-                    className="h-full rounded-full progress-indeterminate"
-                    style={{ backgroundColor: "var(--coral)" }}
-                  />
-                ) : (
-                  <div
-                    className="h-full rounded-full transition-all duration-500 ease-out"
-                    style={{
-                      backgroundColor: "var(--coral)",
-                      width: `${Math.max(45, 45 + (stops.filter((s) => s.verified).length / Math.max(stops.length, 1)) * 52)}%`,
-                    }}
-                  />
+              <div className="space-y-2">
+                <div className="h-1 w-full bg-border rounded-full overflow-hidden">
+                  {state === "streaming" ? (
+                    <div
+                      className="h-full rounded-full progress-indeterminate"
+                      style={{ backgroundColor: "var(--coral)" }}
+                    />
+                  ) : (
+                    <div
+                      className="h-full rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        backgroundColor: "var(--coral)",
+                        width: `${Math.max(45, 45 + (stops.filter((s) => s.verified).length / Math.max(stops.length, 1)) * 52)}%`,
+                      }}
+                    />
+                  )}
+                </div>
+                {elapsedSeconds >= 20 && (
+                  <div className="flex items-center gap-3">
+                    <p className="font-mono text-xs text-amber-600">Taking longer than usual…</p>
+                    {elapsedSeconds >= 40 && (
+                      <button
+                        type="button"
+                        onClick={abort}
+                        className="font-mono text-xs text-destructive border border-destructive/30 rounded px-2 py-0.5 hover:bg-destructive/10 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )}

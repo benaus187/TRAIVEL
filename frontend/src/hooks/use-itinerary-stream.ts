@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Stop, StopSchema, TripBrief } from "@/lib/schemas/itinerary";
 
 type StreamState = "idle" | "streaming" | "verifying" | "done" | "error";
@@ -29,6 +29,23 @@ export function useItineraryStream() {
   const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
   const [trends, setTrends] = useState<TrendItem[] | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (state === "streaming" || state === "verifying") {
+      const interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setElapsedSeconds(0);
+    }
+  }, [state]);
+
+  const abort = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
 
   const generate = useCallback(async (brief: TripBrief, accessToken?: string | null) => {
     setStops([]);
@@ -37,7 +54,11 @@ export function useItineraryStream() {
     setShareSlug(null);
     setWeather(null);
     setTrends(null);
+    setElapsedSeconds(0);
     setState("streaming");
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -49,6 +70,7 @@ export function useItineraryStream() {
           method: "POST",
           headers,
           body: JSON.stringify(brief),
+          signal: controller.signal,
         }
       );
 
@@ -112,6 +134,10 @@ export function useItineraryStream() {
         }
       }
     } catch (err) {
+      if ((err as Error).name === "AbortError") {
+        setState("idle");
+        return;
+      }
       setError(err instanceof Error ? err.message : "Something went wrong");
       setState("error");
     }
@@ -127,5 +153,5 @@ export function useItineraryStream() {
     setTrends(null);
   }, []);
 
-  return { stops, state, error, tripId, shareSlug, weather, trends, generate, reset };
+  return { stops, state, error, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };
 }

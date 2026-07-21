@@ -20,6 +20,7 @@ export default function TripsPage() {
   const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -121,12 +122,14 @@ export default function TripsPage() {
                       onClick={() => {
                         if (slug) {
                           navigator.clipboard.writeText(`${window.location.origin}/trips/${slug}`);
+                          setCopiedSlug(slug);
+                          setTimeout(() => setCopiedSlug(null), 2000);
                         }
                       }}
                       disabled={!slug}
                       className="text-xs font-mono text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors px-2"
                     >
-                      copy link
+                      {copiedSlug === slug ? "✓ copied" : "copy link"}
                     </button>
                   </div>
                 </CardContent>
