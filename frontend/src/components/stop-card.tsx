@@ -6,7 +6,7 @@ import type { Stop } from "@/lib/schemas/itinerary";
 
 function extractPrice(description: string): string | null {
   const match = description.match(
-    /([~≈]?\$[\d,]+(?:[–\-][\d,]+)?(?:\/\w+)?(?:\s*(?:per person|each))?|[Ff]ree(?: entry| admission| access)?)/
+    /([~≈]?(?:\$|€|£|¥|₫|A\$|NZ\$|S\$|฿)[\d,]+(?:[–\-][\d,]+)?(?:\/\w+)?(?:\s*(?:per person|each))?|[\d,]+(?:[–\-][\d,]+)?\s*(?:VND|AUD|NZD|EUR|GBP|JPY|THB|SGD|USD)(?:\/\w+)?|[Ff]ree(?: entry| admission| access)?)/
   );
   return match ? match[0] : null;
 }
@@ -38,11 +38,22 @@ export function TransitConnector({ from, to }: { from: Stop; to: Stop }) {
       <div className="w-px h-5 bg-border shrink-0 ml-[1px]" />
     </div>
   );
+
+  // Prefer AI-generated transit note over haversine estimate
+  if (to.transit_note) {
+    return (
+      <div className="flex items-center gap-2 pl-[18px] py-1 no-print-hide">
+        <div className="w-px h-5 bg-border shrink-0" />
+        <span className="font-mono text-[10px] text-muted-foreground">🚇 {to.transit_note}</span>
+      </div>
+    );
+  }
+
   if (from.lat == null || from.lon == null || to.lat == null || to.lon == null) return plainLine;
   const km = haversineKm(from.lat, from.lon, to.lat, to.lon);
   if (km > 50) return plainLine;
   return (
-    <div className="flex items-center gap-2 pl-[18px] py-1">
+    <div className="flex items-center gap-2 pl-[18px] py-1 no-print-hide">
       <div className="w-px h-5 bg-border shrink-0" />
       <span className="font-mono text-[10px] text-muted-foreground">{transitLabel(km)}</span>
     </div>
@@ -50,6 +61,30 @@ export function TransitConnector({ from, to }: { from: Stop; to: Stop }) {
 }
 
 export function StopCard({ stop }: { stop: Stop }) {
+  const isAccommodation = stop.name.startsWith("Overnight —");
+
+  if (isAccommodation) {
+    return (
+      <Card className="shadow-none border-dashed bg-muted/30">
+        <CardContent className="py-3 px-5 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🌙</span>
+            <p className="font-semibold text-sm">{stop.name}</p>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{stop.description}</p>
+          <a
+            href={`https://www.booking.com/search.html?ss=${encodeURIComponent(stop.name.replace("Overnight — ", ""))}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="no-print inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
+          >
+            🏨 Search hotels
+          </a>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const price = extractPrice(stop.description);
   const isFree = !!price?.match(/^[Ff]ree/);
 
@@ -88,7 +123,7 @@ export function StopCard({ stop }: { stop: Stop }) {
         </p>
 
         {/* Reason codes */}
-        <div className="flex flex-wrap gap-1.5 pt-0.5">
+        <div className="flex flex-wrap gap-1.5 pt-0.5 no-print">
           {stop.reason_codes.map((code) => (
             <ReasonCodeChip key={code} code={code} />
           ))}
@@ -102,7 +137,7 @@ export function StopCard({ stop }: { stop: Stop }) {
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-2 pt-1 flex-wrap">
+        <div className="flex gap-2 pt-1 flex-wrap no-print">
           <a
             href={`https://www.google.com/maps/search/${encodeURIComponent(stop.name)}`}
             target="_blank"

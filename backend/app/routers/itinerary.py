@@ -76,6 +76,7 @@ ITINERARY_TOOL: anthropic.types.ToolParam = {
                         "place_id": {"type": "string", "description": "Foursquare place ID if known, otherwise null"},
                         "verified": {"type": "boolean", "description": "Always false at generation time — set by verification layer"},
                         "weather_alternate": {"type": "string", "description": "Indoor alternative if weather is bad, or null"},
+                        "transit_note": {"type": "string", "description": "How to travel from the previous stop to this one (null for first stop of each day). E.g. 'Take Metro Line 2 from Shinjuku to Harajuku (~5 min, ¥170)' or 'Walk 12 min south along the river'."},
                     },
                     "required": ["day", "time", "name", "description", "reason_codes", "verified"],
                 },
@@ -91,9 +92,13 @@ class TripBrief(BaseModel):
     days: int
     start_date: str | None = None  # ISO date, e.g. "2026-07-24"
     interests: list[str]
-    budget_usd_per_day: int = 100
+    budget_usd_total: int = 0
+    currency: str = "USD"
     pace: str
     avoid: list[str] = []
+    transport_mode: str = "public_transport"  # "public_transport" | "walking" | "any"
+    include_accommodation: bool = False
+    flight_notes: str | None = None
 
 
 def _build_prompt(
@@ -134,12 +139,44 @@ Day-by-day weather forecast — structure each day's stops accordingly:
 {chr(10).join(lines)}
 On rainy/bad-weather days: prioritise indoor venues (museums, cafes, galleries, restaurants). On clear days: prioritise outdoor experiences."""
 
+    transport_labels = {
+        "public_transport": "public transport (metro, bus, tram)",
+        "walking": "walking only",
+        "any": "any mode (walking, public transport, or taxi)",
+    }
+    transport_label = transport_labels.get(brief.transport_mode, "public transport")
+
+    accommodation_str = ""
+    if brief.include_accommodation and brief.days > 1:
+        accommodation_str = f"""
+
+Accommodation: After the last activity stop of each day except the final day, add one extra stop:
+- name: "Overnight — [neighbourhood name]"
+- time: ~1 hour after the last activity stop of that day
+- description: Suggest a specific neighbourhood to stay in. Include budget range (~X–Y {brief.currency}/night for hostels/budget hotels) and mid-range range (~A–B {brief.currency}/night). Add 1–2 sentences on why the area is convenient for the next day's plan.
+- reason_codes: ["budget fit"]
+- transit_note: null"""
+
+    flight_str = ""
+    if brief.flight_notes:
+        flight_str = f"""
+
+Flight information provided by traveller:
+{brief.flight_notes}
+Use this to constrain the schedule: don't plan activity stops before the arrival (allow 90 min immigration/luggage buffer), and end the last day's itinerary at least 3 hours before departure."""
+
+    per_day = brief.budget_usd_total // max(brief.days, 1)
+    currency_str = ""
+    if brief.currency != "USD":
+        currency_str = f"Generate all prices in {brief.currency}. "
+
     return f"""Plan a {brief.days}-day trip to {brief.destination}.
 
 Traveller profile:
 - Interests: {interests_str}
-- Daily budget: ${brief.budget_usd_per_day} USD
-- Pace: {brief.pace}{avoid_str}{places_str}{weather_str}
+- Total trip budget: ${brief.budget_usd_total} USD (~${per_day}/day). {currency_str}Plan stops, meals, and transport to stay within this total.
+- Pace: {brief.pace}
+- Preferred transport: {transport_label}{avoid_str}{flight_str}{places_str}{weather_str}{accommodation_str}
 
 Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). For each stop:
 - Set the `day` field to 1 for Day 1, 2 for Day 2, etc. (required)
@@ -149,9 +186,10 @@ Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). F
   - "food fit" — a meal or drink stop that matches the interests/budget
   - "budget fit" — free or low-cost, good for the stated budget
   - "weather alternate ready" — has a nearby indoor fallback
+- Fill transit_note for every stop EXCEPT the first stop of each day. Use {transport_label}. Be specific: include line/route name, approx time, and fare if applicable.
 
-Include 4–6 stops per day. Be specific: use real place names, not generic descriptions.
-For every stop description, always include an estimated cost at the end (e.g. "~$25/person", "Free entry", "~$120 for the tour"). This helps the traveller budget their day."""
+Include 4–6 activity stops per day. Be specific: use real place names, not generic descriptions.
+For every stop description, always include an estimated cost at the end (e.g. "~25 {brief.currency}/person", "Free entry", "~120 {brief.currency} for the tour"). This helps the traveller budget their day."""
 
 
 def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None = None) -> tuple[str, str, str | None]:
@@ -161,7 +199,7 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None =
         "destination": brief.destination,
         "days": brief.days,
         "interests": brief.interests,
-        "budget": f"${brief.budget_usd_per_day}/day",
+        "budget": f"${brief.budget_usd_total} total",
         "pace": brief.pace,
         "avoid": brief.avoid,
     }
@@ -198,10 +236,12 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None =
             "place_id": s.get("place_id"),
             "verified": s.get("verified", False),
             "weather_alternate": s.get("weather_alternate"),
+            "transit_note": s.get("transit_note"),
         }
         for i, s in enumerate(stops)
     ]
-    db.table("stops").insert(rows).execute()
+    if rows:
+        db.table("stops").insert(rows).execute()
 
     return trip_id, itinerary_id, share_slug
 
@@ -227,7 +267,7 @@ async def generate_itinerary(brief: TripBrief, authorization: str | None = Heade
             # 2. Generate itinerary with Claude — prompt includes places + weather
             message = client.messages.create(
                 model="claude-opus-4-8",
-                max_tokens=4096,
+                max_tokens=8192,
                 tools=[ITINERARY_TOOL],
                 tool_choice={"type": "tool", "name": "create_itinerary"},
                 messages=[{"role": "user", "content": _build_prompt(brief, popular_places, weather_forecast)}],

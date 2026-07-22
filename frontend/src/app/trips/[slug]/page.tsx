@@ -32,7 +32,7 @@ export default function SharedTripPage() {
     const supabase = createClient();
     supabase
       .from("itineraries")
-      .select("id, share_slug, trips(destination, days), stops(position, day, time, name, description, reason_codes, verified, weather_alternate, booking_url, lat, lon)")
+      .select("id, share_slug, trips(destination, days), stops(position, day, time, name, description, reason_codes, verified, weather_alternate, booking_url, lat, lon, transit_note)")
       .eq("share_slug", slug)
       .order("position", { referencedTable: "stops", ascending: true })
       .single()
@@ -80,19 +80,27 @@ export default function SharedTripPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-4">
-      <div>
-        <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
-          Shared itinerary
-        </p>
-        <h1 className="text-xl font-bold">{data.trips?.destination ?? "Trip"}</h1>
-        <p className="font-mono text-xs text-muted-foreground">
-          {data.trips?.days ?? totalDays} day{(data.trips?.days ?? totalDays) > 1 ? "s" : ""}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
+            Shared itinerary
+          </p>
+          <h1 className="text-xl font-bold">{data.trips?.destination ?? "Trip"}</h1>
+          <p className="font-mono text-xs text-muted-foreground">
+            {data.trips?.days ?? totalDays} day{(data.trips?.days ?? totalDays) > 1 ? "s" : ""}
+          </p>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="no-print font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors shrink-0"
+        >
+          print / PDF
+        </button>
       </div>
       <Separator />
 
       {totalDays > 1 && (
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 no-print">
           {Array.from({ length: totalDays }, (_, i) => i + 1).map((d) => (
             <button
               key={d}
@@ -109,15 +117,26 @@ export default function SharedTripPage() {
         </div>
       )}
 
-      <MapView stops={dayStops} />
+      <div className="no-print"><MapView stops={dayStops} /></div>
 
       <div className="space-y-0">
-        {dayStops.map((stop, i) => (
-          <div key={i}>
-            {i > 0 && <TransitConnector from={dayStops[i - 1]} to={stop} />}
-            <StopCard stop={stop} />
-          </div>
-        ))}
+        {Array.from({ length: totalDays }, (_, i) => i + 1).map((d) => {
+          const dStops = stops.filter((s) => (s.day ?? 1) === d);
+          const isActive = d === activeDay;
+          return (
+            <div key={d} className={isActive ? "" : "hidden-day"}>
+              <h3 className="print-only font-mono text-xs uppercase tracking-widest py-1.5 border-b border-border text-muted-foreground mb-2 mt-3">
+                Day {d}
+              </h3>
+              {dStops.map((stop, i) => (
+                <div key={i}>
+                  {i > 0 && <TransitConnector from={dStops[i - 1]} to={stop} />}
+                  <StopCard stop={stop} />
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       <div className="pt-4 text-center">

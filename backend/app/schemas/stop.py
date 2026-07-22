@@ -18,6 +18,7 @@ class Stop(BaseModel):
     place_id: str | None = None
     verified: bool = False
     weather_alternate: str | None = None
+    transit_note: str | None = None
 
 
 class Itinerary(BaseModel):

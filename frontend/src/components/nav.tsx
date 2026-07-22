@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { CurrencySelector } from "@/components/currency-selector";
 
 export function Nav() {
   const { user, loading, signOut } = useAuth();
@@ -17,6 +18,7 @@ export function Nav() {
           <Wordmark />
         </Link>
         <nav className="flex items-center gap-4 text-sm">
+          <CurrencySelector />
           <Link href="/plan" className="text-muted-foreground hover:text-foreground transition-colors">
             Plan a trip
           </Link>

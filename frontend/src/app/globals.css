@@ -150,3 +150,49 @@
     @apply font-sans;
   }
 }
+
+.print-only {
+  display: none;
+}
+
+@media screen {
+  .hidden-day {
+    display: none;
+  }
+}
+
+@media print {
+  nav,
+  aside,
+  .no-print,
+  .no-print-hide {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Show all days — override the screen-only hidden-day rule */
+  .hidden-day {
+    display: block !important;
+  }
+
+  /* Disable entrance animation so hidden-day content isn't frozen at opacity:0 */
+  .stop-card-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    page-break-inside: avoid;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}

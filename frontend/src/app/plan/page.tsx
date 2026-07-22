@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
+import { useCurrencyStore } from "@/stores/currency-store";
 import { useAuth } from "@/hooks/use-auth";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import { StopCard, TransitConnector } from "@/components/stop-card";
@@ -42,13 +43,20 @@ type GeoSuggestion = { name: string; admin1: string; country: string };
 export default function PlanPage() {
   const { stops, state, error, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
+  const { currency, symbol, rate } = useCurrencyStore();
   const [brief, setBrief] = useState<Partial<TripBrief>>({
-    days: 2,
-    budget_usd_per_day: 100,
+    days: 3,
+    budget_usd_total: 0,
     pace: "moderate",
     interests: [],
     avoid: [],
+    transport_mode: "public_transport",
+    include_accommodation: false,
   });
+  const [budgetLocal, setBudgetLocal] = useState(0);
+  const [endDate, setEndDate] = useState("");
+  const [flightNotes, setFlightNotes] = useState("");
+  const [flightOpen, setFlightOpen] = useState(false);
 
   // Destination autocomplete state
   const [suggestions, setSuggestions] = useState<GeoSuggestion[]>([]);
@@ -84,6 +92,16 @@ export default function PlanPage() {
   useEffect(() => {
     setFormError(null);
   }, [brief]);
+
+  // Compute days from start + end date
+  useEffect(() => {
+    if (brief.start_date && endDate && endDate >= brief.start_date) {
+      const diff = Math.round(
+        (new Date(endDate).getTime() - new Date(brief.start_date).getTime()) / 86400000
+      ) + 1;
+      setBrief((p) => ({ ...p, days: Math.min(14, Math.max(1, diff)) }));
+    }
+  }, [brief.start_date, endDate]);
 
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) { setSuggestions([]); return; }
@@ -174,7 +192,16 @@ export default function PlanPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = TripBriefSchema.safeParse(brief);
+    const budgetUsd = currency === "USD" ? budgetLocal : Math.round(budgetLocal / rate);
+    // If no end date set, default days to 3
+    const days = (brief.start_date && endDate) ? (brief.days ?? 3) : (brief.days ?? 3);
+    const parsed = TripBriefSchema.safeParse({
+      ...brief,
+      days,
+      budget_usd_total: budgetUsd,
+      currency,
+      flight_notes: flightNotes.trim() || undefined,
+    });
     if (!parsed.success) {
       setFormError(parsed.error.issues[0].message);
       return;
@@ -243,31 +270,33 @@ export default function PlanPage() {
             </div>
           </Field>
 
-          {/* Days */}
-          <Field label="Days">
-            <input
-              type="number"
-              min={1}
-              max={14}
-              value={brief.days ?? 2}
-              onChange={(e) =>
-                setBrief((p) => ({ ...p, days: Number(e.target.value) }))
-              }
-              className="w-24 border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-          </Field>
-
-          {/* Start date */}
-          <Field label="Start date">
-            <input
-              type="date"
-              value={brief.start_date ?? ""}
-              onChange={(e) =>
-                setBrief((p) => ({ ...p, start_date: e.target.value || undefined }))
-              }
-              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-          </Field>
+          {/* Start date + End date → auto-computes days */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Start date">
+              <input
+                type="date"
+                value={brief.start_date ?? ""}
+                onChange={(e) =>
+                  setBrief((p) => ({ ...p, start_date: e.target.value || undefined }))
+                }
+                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </Field>
+            <Field label="End date">
+              <input
+                type="date"
+                value={endDate}
+                min={brief.start_date ?? undefined}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </Field>
+          </div>
+          {brief.days != null && brief.start_date && endDate && (
+            <p className="font-mono text-[10px] text-muted-foreground -mt-2">
+              {brief.days} day{brief.days > 1 ? "s" : ""}
+            </p>
+          )}
 
           {/* Interests */}
           <Field label="Interests">
@@ -337,24 +366,27 @@ export default function PlanPage() {
             )}
           </Field>
 
-          {/* Budget slider */}
-          <Field label={`Budget · $${brief.budget_usd_per_day ?? 100} / day`}>
-            <input
-              type="range"
-              min={0}
-              max={500}
-              step={10}
-              value={brief.budget_usd_per_day ?? 100}
-              onChange={(e) =>
-                setBrief((p) => ({ ...p, budget_usd_per_day: Number(e.target.value) }))
-              }
-              className="w-full accent-foreground"
-            />
-            <div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-0.5">
-              <span>$0</span>
-              <span>$250</span>
-              <span>$500</span>
+          {/* Budget input */}
+          <Field label={`Total trip budget (${currency})`}>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono">
+                {symbol}
+              </span>
+              <input
+                type="number"
+                min={0}
+                step={currency === "VND" ? 500000 : currency === "JPY" ? 1000 : 50}
+                value={budgetLocal || ""}
+                onChange={(e) => setBudgetLocal(Number(e.target.value))}
+                placeholder={currency === "VND" ? "e.g. 50000000" : currency === "JPY" ? "e.g. 300000" : "e.g. 2000"}
+                className="w-full border border-border rounded-md pl-7 pr-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              />
             </div>
+            {currency !== "USD" && budgetLocal > 0 && (
+              <p className="text-[10px] font-mono text-muted-foreground mt-1">
+                ≈ ${Math.round(budgetLocal / rate).toLocaleString()} USD
+              </p>
+            )}
           </Field>
 
           {/* Pace */}
@@ -366,6 +398,55 @@ export default function PlanPage() {
                 setBrief((p) => ({ ...p, pace: v as TripBrief["pace"] }))
               }
             />
+          </Field>
+
+          {/* Transport mode */}
+          <Field label="Getting around">
+            <SelectRow
+              options={["public_transport", "walking", "any"]}
+              labels={["🚇 Public transport", "🚶 Walking", "🔀 Any"]}
+              value={brief.transport_mode ?? "public_transport"}
+              onChange={(v) =>
+                setBrief((p) => ({ ...p, transport_mode: v as TripBrief["transport_mode"] }))
+              }
+            />
+          </Field>
+
+          {/* Accommodation toggle */}
+          <Field label="Accommodation">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={brief.include_accommodation ?? false}
+                onChange={(e) =>
+                  setBrief((p) => ({ ...p, include_accommodation: e.target.checked }))
+                }
+                className="accent-foreground w-4 h-4"
+              />
+              <span className="text-xs font-mono text-muted-foreground">
+                Include overnight suggestions
+              </span>
+            </label>
+          </Field>
+
+          {/* Flight info */}
+          <Field label="Flights (optional)">
+            <button
+              type="button"
+              onClick={() => setFlightOpen((v) => !v)}
+              className="text-xs font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
+            >
+              {flightOpen ? "▲ hide" : "▼ add flight info"}
+            </button>
+            {flightOpen && (
+              <textarea
+                rows={3}
+                placeholder={`e.g. Inbound: VJ123 from Hanoi, departs 06:30 arrives ${brief.destination ?? "destination"} 07:45\nReturn: VJ124 departs ${brief.destination ?? "destination"} 20:00 back to Hanoi`}
+                value={flightNotes}
+                onChange={(e) => setFlightNotes(e.target.value)}
+                className="mt-2 w-full border border-border rounded-md px-3 py-2 text-xs font-mono bg-background focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              />
+            )}
           </Field>
 
           {/* Avoid */}
@@ -501,6 +582,12 @@ export default function PlanPage() {
                       sign in to share
                     </a>
                   ) : null}
+                  <button
+                    onClick={() => window.print()}
+                    className="no-print font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors"
+                  >
+                    print / PDF
+                  </button>
                 </div>
               )}
             </div>
@@ -568,16 +655,37 @@ export default function PlanPage() {
               </div>
             )}
 
-            {/* Map for active day */}
-            {state === "done" && <MapView stops={dayStops} />}
+            {/* Print-only: trip title + flight info */}
+            <div className="print-only mb-4 space-y-1">
+              <p className="font-bold text-base">{brief.destination} · {brief.days} day{(brief.days ?? 1) > 1 ? "s" : ""}</p>
+              {flightNotes && (
+                <p className="font-mono text-xs text-muted-foreground whitespace-pre-line">{flightNotes}</p>
+              )}
+            </div>
 
-            {/* Stop cards for active day */}
-            {dayStops.map((stop, i) => (
-              <div key={`${activeDay}-${i}`} className="stop-card-enter">
-                {i > 0 && <TransitConnector from={dayStops[i - 1]} to={stop} />}
-                <StopCard stop={stop} />
-              </div>
-            ))}
+            {/* Map for active day */}
+            {state === "done" && (
+              <div className="no-print"><MapView stops={dayStops} /></div>
+            )}
+
+            {/* Stop cards — all days rendered in DOM; inactive days hidden on screen, all shown during print */}
+            {Array.from({ length: totalDays }, (_, i) => i + 1).map((d) => {
+              const dStops = stops.filter((s) => (s.day ?? 1) === d);
+              const isActive = d === activeDay;
+              return (
+                <div key={d} className={isActive ? "" : "hidden-day"}>
+                  <h3 className="print-only font-mono text-xs uppercase tracking-widest py-1.5 border-b border-border text-muted-foreground mb-2 mt-3">
+                    Day {d}
+                  </h3>
+                  {dStops.map((stop, i) => (
+                    <div key={i} className="stop-card-enter">
+                      {i > 0 && <TransitConnector from={dStops[i - 1]} to={stop} />}
+                      <StopCard stop={stop} />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
@@ -639,16 +747,18 @@ function Field({
 
 function SelectRow({
   options,
+  labels,
   value,
   onChange,
 }: {
   options: string[];
+  labels?: string[];
   value: string;
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex gap-2">
-      {options.map((opt) => (
+    <div className="flex gap-2 flex-wrap">
+      {options.map((opt, i) => (
         <button
           key={opt}
           type="button"
@@ -659,7 +769,7 @@ function SelectRow({
               : "bg-background text-muted-foreground border-border hover:border-foreground"
           }`}
         >
-          {opt}
+          {labels?.[i] ?? opt}
         </button>
       ))}
     </div>

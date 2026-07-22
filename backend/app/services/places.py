@@ -36,7 +36,11 @@ async def search_place(name: str, destination: str) -> dict | None:
 
     place = places[0]
     location = place.get("location", {})
+    if not isinstance(location, dict):
+        location = {}
     hours = place.get("regularOpeningHours", {})
+    if not isinstance(hours, dict):
+        hours = {}
     weekday = hours.get("weekdayDescriptions", [])
 
     return {
@@ -73,13 +77,16 @@ async def discover_popular_places(destination: str) -> list[dict]:
 
     results = []
     for p in data.get("places", [])[:8]:
-        name = p.get("displayName", {}).get("text", "")
+        display_name = p.get("displayName", {})
+        name = display_name.get("text", "") if isinstance(display_name, dict) else str(display_name)
         if not name:
             continue
+        editorial = p.get("editorialSummary", {})
+        summary = editorial.get("text", "") if isinstance(editorial, dict) else str(editorial)
         results.append({
             "name": name,
             "rating": p.get("rating"),
             "review_count": p.get("userRatingCount"),
-            "summary": p.get("editorialSummary", {}).get("text", ""),
+            "summary": summary,
         })
     return results
