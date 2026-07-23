@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRAIVEL — Version C: Vibrant Modern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --amber:       #ffb26b;
+      --amber-muted: #c4823a;
+      --amber-dim:   #7a4e1e;
+      --bg:          #18110e;
+      --bg-card:     #241812;
+      --bg-card-2:   #2e1f14;
+      --text:        #f5ede4;
+      --text-muted:  #9e8070;
+      --green:       #4ade80;
+      --border:      #3a2518;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Version label */
+    .version-label {
+      position: fixed;
+      top: 12px;
+      right: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--amber-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      z-index: 100;
+      background: rgba(24,17,14,0.85);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Page shell ── */
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ──────────────────────────────────────────
+       NAV
+    ────────────────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 18px;
+      position: sticky;
+      top: 0;
+      background: rgba(24,17,14,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .wordmark .ai-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--amber);
+      color: var(--bg);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 1px 6px 2px;
+      border-radius: 5px;
+      letter-spacing: 0.01em;
+      vertical-align: baseline;
+      line-height: 1.4;
+      margin: 0 1px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-links .nav-cta {
+      color: var(--amber);
+      border: 1.5px solid var(--amber-dim);
+      padding: 5px 14px;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-links .nav-cta:hover {
+      background: var(--amber);
+      color: var(--bg);
+    }
+
+    /* ──────────────────────────────────────────
+       HERO
+    ────────────────────────────────────────── */
+    .hero {
+      padding: 60px 24px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(255,178,107,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 2px;
+    }
+
+    .hero-headline {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      margin-bottom: 22px;
+    }
+
+    .hero-headline .accent {
+      color: var(--amber);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 360px;
+    }
+
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--amber);
+      color: var(--bg);
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 26px;
+      border-radius: 12px;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      transition: background 0.15s, transform 0.1s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: #ffc285;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary .arrow {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .hero-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .hero-proof {
+      display: flex;
+      gap: 20px;
+      margin-top: 40px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    .proof-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .proof-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--amber);
+      letter-spacing: -0.04em;
+    }
+
+    .proof-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .proof-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* ──────────────────────────────────────────
+       SECTION WRAPPER
+    ────────────────────────────────────────── */
+    section {
+      padding: 48px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amber-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ──────────────────────────────────────────
+       HOW IT WORKS
+    ────────────────────────────────────────── */
+    .how-title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 36px;
+    }
+
+    .how-title .accent { color: var(--amber); }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 0 16px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .step:last-child { border-bottom: none; }
+
+    .step-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--amber);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      padding-top: 2px;
+    }
+
+    .step-content {}
+
+    .step-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 7px;
+      line-height: 1.25;
+    }
+
+    .step-desc {
+      font-size: 13.5px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .step-desc strong {
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    /* ──────────────────────────────────────────
+       ITINERARY PREVIEW
+    ────────────────────────────────────────── */
+    .itin-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 12px;
+    }
+
+    .itin-dest {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .itin-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .itin-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--green);
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .itin-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .day-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber-muted);
+      margin-bottom: 12px;
+    }
+
+    .stops {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stop-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stop-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--amber);
+      border-radius: 16px 0 0 16px;
+    }
+
+    .stop-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .stop-time {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--amber);
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .verified-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .stop-name {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 7px;
+    }
+
+    .stop-desc {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--amber);
+      border: 1.5px solid var(--amber-dim);
+      background: rgba(255,178,107,0.06);
+      padding: 3px 10px 4px;
+      border-radius: 100px;
+      white-space: nowrap;
+      text-transform: lowercase;
+    }
+
+    .stop-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+    }
+
+    .stop-cost {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .stop-cost span {
+      color: var(--text);
+    }
+
+    .book-link {
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--amber);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+      border-bottom: 1.5px solid var(--amber-dim);
+      padding-bottom: 1px;
+    }
+
+    .book-link:hover { color: #ffc285; }
+
+    /* Transit connector */
+    .transit-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0 8px 18px;
+    }
+
+    .transit-dot-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      width: 20px;
+      flex-shrink: 0;
+    }
+
+    .transit-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber-dim);
+    }
+
+    .transit-bar {
+      width: 2px;
+      height: 12px;
+      background: var(--amber-dim);
+      border-radius: 2px;
+    }
+
+    .transit-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ──────────────────────────────────────────
+       DIFFERENTIATORS
+    ────────────────────────────────────────── */
+    .diff-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 28px;
+    }
+
+    .diff-title .accent { color: var(--amber); }
+
+    .diff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .diff-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .diff-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255,178,107,0.1);
+      border: 1.5px solid var(--amber-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .diff-body {}
+
+    .diff-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 5px;
+    }
+
+    .diff-desc {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    /* ──────────────────────────────────────────
+       FOOTER
+    ────────────────────────────────────────── */
+    footer {
+      padding: 36px 24px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-wordmark {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .footer-wordmark .ai-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--amber);
+      color: var(--bg);
+      font-size: 15px;
+      font-weight: 800;
+      padding: 1px 6px 2px;
+      border-radius: 5px;
+      letter-spacing: 0.01em;
+      vertical-align: baseline;
+      line-height: 1.4;
+      margin: 0 1px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+      max-width: 320px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .footer-links a {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: var(--amber); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-copy {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .footer-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--amber-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="version-label">Version C — Vibrant Modern</div>
+
+  <div class="page">
+
+    <!-- ── NAV ── -->
+    <nav>
+      <div class="wordmark">TR<span class="ai-pill">AI</span>VEL</div>
+      <div class="nav-links">
+        <a href="#">How it works</a>
+        <a href="#" class="nav-cta">Plan a trip</a>
+      </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <div class="hero">
+      <div class="hero-eyebrow">AI-powered travel planning</div>
+      <h1 class="hero-headline">
+        Plan less.<br/>
+        <span class="accent">Explore</span><br/>
+        more.
+      </h1>
+      <p class="hero-sub">
+        TRAIVEL builds your trip around <strong>real-time data</strong> — verified hours, live weather, and trending spots — then shows you <strong>exactly why each stop made the cut.</strong>
+      </p>
+      <div class="hero-cta-row">
+        <a href="#" class="btn-primary">
+          Start planning <span class="arrow">→</span>
+        </a>
+        <span class="hero-meta">No sign-up required</span>
+      </div>
+      <div class="hero-proof">
+        <div class="proof-item">
+          <span class="proof-num">100%</span>
+          <span class="proof-label">Verified stops</span>
+        </div>
+        <div class="proof-divider"></div>
+        <div class="proof-item">
+          <span class="proof-num">3x</span>
+          <span class="proof-label">Data sources</span>
+        </div>
+        <div class="proof-divider"></div>
+        <div class="proof-item">
+          <span class="proof-num">&lt;30s</span>
+          <span class="proof-label">Generation time</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section>
+      <div class="section-label">// How it works</div>
+      <h2 class="how-title">Built different.<br/><span class="accent">On purpose.</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <div class="step-title">Tell us your vibe</div>
+            <div class="step-desc">Destination, dates, budget, pace, interests, things you want to avoid. The brief takes 60 seconds.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <div class="step-title">AI builds — and verifies</div>
+            <div class="step-desc">Claude generates your itinerary while simultaneously checking <strong>opening hours</strong> via Foursquare and <strong>weather</strong> via Open-Meteo. No hallucinated closures.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <div class="step-title">See the why</div>
+            <div class="step-desc">Every stop gets <strong>reason code chips</strong>: social momentum, transport fit, food fit, budget fit. Not black-box output — transparent decisions.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SAMPLE ITINERARY ── -->
+    <section>
+      <div class="section-label">// Sample itinerary</div>
+      <div class="itin-header">
+        <div class="itin-dest">Queenstown<br/>· 2 days</div>
+        <div class="itin-meta">
+          <div class="itin-badge">✓ all stops verified</div>
+          <div class="itin-date">Nov 14–15 · NZD budget</div>
+        </div>
+      </div>
+
+      <div class="day-label">Day 01 — Arrive &amp; Explore</div>
+      <div class="stops">
+
+        <!-- Stop 1 -->
+        <div class="stop-card">
+          <div class="stop-top">
+            <div class="stop-time">09:00</div>
+            <div class="verified-badge">✓ verified</div>
+          </div>
+          <div class="stop-name">Fergburger</div>
+          <div class="stop-desc">Legendary burgers that actually live up to the hype. Order the Ferg — bacon, brie, cranberry. Arrive early or queue for 20 min.</div>
+          <div class="chips">
+            <span class="chip">social momentum</span>
+            <span class="chip">food fit</span>
+            <span class="chip">budget fit</span>
+          </div>
+          <div class="stop-footer">
+            <div class="stop-cost">Est. cost <span>NZD $18</span></div>
+            <a href="#" class="book-link">View on maps →</a>
+          </div>
+        </div>
+
+        <!-- Transit -->
+        <div class="transit-line">
+          <div class="transit-dot-col">
+            <div class="transit-dot"></div>
+            <div class="transit-bar"></div>
+            <div class="transit-dot"></div>
+          </div>
+          <span class="transit-text">12 min walk · downhill</span>
+        </div>
+
+        <!-- Stop 2 -->
+        <div class="stop-card">
+          <div class="stop-top">
+            <div class="stop-time">10:30</div>
+            <div class="verified-badge">✓ verified</div>
+          </div>
+          <div class="stop-name">Skyline Gondola</div>
+          <div class="stop-desc">Best panoramic view of the Remarkables from 790 m. Morning light hits the lake perfectly before noon crowds arrive.</div>
+          <div class="chips">
+            <span class="chip">social momentum</span>
+            <span class="chip">weather alternate ready</span>
+            <span class="chip">transport fit</span>
+          </div>
+          <div class="stop-footer">
+            <div class="stop-cost">Est. cost <span>NZD $42</span></div>
+            <a href="#" class="book-link">Book tickets →</a>
+          </div>
+        </div>
+
+        <!-- Transit -->
+        <div class="transit-line">
+          <div class="transit-dot-col">
+            <div class="transit-dot"></div>
+            <div class="transit-bar"></div>
+            <div class="transit-dot"></div>
+          </div>
+          <span class="transit-text">8 min gondola + 5 min walk</span>
+        </div>
+
+        <!-- Stop 3 -->
+        <div class="stop-card">
+          <div class="stop-top">
+            <div class="stop-time">14:00</div>
+            <div class="verified-badge">✓ verified</div>
+          </div>
+          <div class="stop-name">Queenstown Bay Beach</div>
+          <div class="stop-desc">Central beach for an afternoon wind-down. Paddleboard rentals available until 17:00. Forecast: 19°C, clear sky.</div>
+          <div class="chips">
+            <span class="chip">weather alternate ready</span>
+            <span class="chip">transport fit</span>
+            <span class="chip">budget fit</span>
+          </div>
+          <div class="stop-footer">
+            <div class="stop-cost">Est. cost <span>NZD $25</span></div>
+            <a href="#" class="book-link">See weather →</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── DIFFERENTIATORS ── -->
+    <section>
+      <div class="section-label">// What sets it apart</div>
+      <h2 class="diff-title">No other planner<br/>does <span class="accent">all three.</span></h2>
+      <div class="diff-list">
+        <div class="diff-item">
+          <div class="diff-icon">📡</div>
+          <div class="diff-body">
+            <div class="diff-name">Trend signals from X</div>
+            <div class="diff-desc">Scored by volume, recency, and engagement. Sponsored and repeated content filtered out automatically.</div>
+          </div>
+        </div>
+        <div class="diff-item">
+          <div class="diff-icon">🏷️</div>
+          <div class="diff-body">
+            <div class="diff-name">Per-stop reason codes</div>
+            <div class="diff-desc">Typed chips on every stop: social momentum, transport fit, food fit, budget fit, weather alternate ready.</div>
+          </div>
+        </div>
+        <div class="diff-item">
+          <div class="diff-icon">✅</div>
+          <div class="diff-body">
+            <div class="diff-name">Verification during generation</div>
+            <div class="diff-desc">Foursquare + Open-Meteo called as Claude builds — not a slow post-processing step. Hours and weather are live.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer>
+      <div class="footer-wordmark">TR<span class="ai-pill">AI</span>VEL</div>
+      <p class="footer-tagline">AI travel planning that shows its work. Every stop. Every reason.</p>
+      <div class="footer-links">
+        <a href="#">How it works</a>
+        <a href="#">About</a>
+        <a href="#">GitHub</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 TRAIVEL. Portfolio project.</span>
+        <span class="footer-badge">Version C</span>
+      </div>
+    </footer>
+
+  </div><!-- /.page -->
+
+</body>
+</html>

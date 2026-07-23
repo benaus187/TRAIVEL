@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRAIVEL — Version A: Trendy Editorial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Newsreader:ital,wght@0,400;0,500;1,300;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --coral: #e85d3d;
+      --coral-light: #fde8e3;
+      --coral-dark: #c4431f;
+      --bg: #faf7f2;
+      --text: #1a1a1a;
+      --text-muted: #6b6560;
+      --text-faint: #a09890;
+      --green: #1f7a45;
+      --green-light: #e6f4ec;
+      --slate: #3d5a72;
+      --slate-light: #dce6ed;
+      --amber: #b45309;
+      --amber-light: #fef3c7;
+      --border: #e8e2d9;
+      --card-bg: #fff;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Sora', sans-serif;
+      --serif: 'Newsreader', serif;
+    }
+
+    html { background: #1a1a1a; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* VERSION LABEL */
+    .version-label {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: var(--text);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 5px 14px 4px;
+      border-radius: 0 0 8px 8px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 247, 242, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .wordmark {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .wordmark .ai {
+      color: var(--coral);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-links a:hover { background: var(--border); color: var(--text); }
+
+    .nav-links a.cta {
+      background: var(--coral);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .nav-links a.cta:hover { background: var(--coral-dark); }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 52px 24px 48px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(232,93,61,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1.5px;
+      background: var(--coral);
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 .editorial-line {
+      display: block;
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 36px;
+      color: var(--text-muted);
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+      max-width: 340px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--coral);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .hero-cta:hover { background: var(--coral-dark); transform: translateY(-1px); }
+
+    .hero-cta .arrow { font-size: 18px; transition: transform 0.15s; }
+    .hero-cta:hover .arrow { transform: translateX(3px); }
+
+    .hero-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 36px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    .hero-stat-num {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--text-faint);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .section-how {
+      padding: 48px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 32px;
+    }
+
+    .section-title em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--coral);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .step:last-child { border-bottom: none; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--text);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .step:nth-child(1) .step-num { background: var(--coral); }
+
+    .step-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .step-body h3 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .step-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ─── SAMPLE ITINERARY ─── */
+    .section-itinerary {
+      padding: 48px 0 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-itinerary-header {
+      padding: 0 24px 24px;
+    }
+
+    .itinerary-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .destination-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .days-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+    }
+
+    .verified-all {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--green);
+      background: var(--green-light);
+      padding: 4px 10px;
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+    }
+
+    .pull-quote {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--text-muted);
+      border-left: 2px solid var(--coral);
+      padding-left: 16px;
+      margin-bottom: 4px;
+    }
+
+    /* Stop cards */
+    .stops-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .stop-card {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .stop-card:last-child { border-bottom: 1px solid var(--border); }
+
+    .stop-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .stop-time {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--coral);
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .stop-name {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .stop-verified {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--green);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .stop-verified .check {
+      width: 16px;
+      height: 16px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+
+    .stop-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .stop-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .chip-coral { background: var(--coral-light); color: var(--coral-dark); }
+    .chip-slate { background: var(--slate-light); color: var(--slate); }
+    .chip-amber { background: var(--amber-light); color: var(--amber); }
+    .chip-green { background: var(--green-light); color: var(--green); }
+
+    .stop-cost {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .stop-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--coral);
+      text-decoration: none;
+      border-bottom: 1px solid var(--coral-light);
+      padding-bottom: 1px;
+      transition: border-color 0.15s;
+    }
+
+    .stop-link:hover { border-color: var(--coral); }
+
+    .stop-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 24px;
+    }
+
+    .stop-divider-line {
+      flex: 1;
+      border: none;
+      border-left: 1.5px dashed var(--border);
+      height: 20px;
+      margin-left: 7px;
+    }
+
+    /* ─── EDITORIAL CALLOUT ─── */
+    .editorial-callout {
+      margin: 0 24px 48px;
+      padding: 20px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 12px;
+      margin-top: 32px;
+    }
+
+    .editorial-callout p {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 16px;
+      line-height: 1.6;
+      color: rgba(250,247,242,0.85);
+      margin-bottom: 12px;
+    }
+
+    .editorial-callout .byline {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--coral);
+      text-transform: uppercase;
+      font-style: normal;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 28px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-wordmark {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .footer-wordmark .ai { color: var(--coral); }
+
+    .footer-tagline {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.06em;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- VERSION LABEL -->
+  <div class="version-label">Version A — Trendy Editorial</div>
+
+  <!-- ─── NAV ─── -->
+  <nav>
+    <a href="#" class="wordmark">TR<span class="ai">AI</span>VEL</a>
+    <div class="nav-links">
+      <a href="#">My trips</a>
+      <a href="#">Sign in</a>
+      <a href="#" class="cta">Plan a trip</a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="hero-eyebrow">AI-powered · Verified · Real-time</div>
+
+    <h1>
+      Your next trip,<br />
+      planned by AI.
+      <span class="editorial-line">Verified stop by stop.</span>
+    </h1>
+
+    <p class="hero-sub">
+      Not just a list of places — a living itinerary backed by real data.
+      Every stop checked against actual hours, weather, and social buzz.
+    </p>
+
+    <a href="#" class="hero-cta">
+      Plan a trip
+      <span class="arrow">→</span>
+    </a>
+
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-label">stops verified</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-label">data signals</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">&lt;60s</div>
+        <div class="hero-stat-label">to full itinerary</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section class="section-how">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps to a <em>smarter</em> trip</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">①</div>
+        <div class="step-body">
+          <h3>Fill in your brief</h3>
+          <p>Destination, dates, vibe, budget, pace, and what to skip. 60 seconds max.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">②</div>
+        <div class="step-body">
+          <h3>AI builds your itinerary</h3>
+          <p>Claude reads your brief and pulls in social trends, local buzz, transport logic — then streams your plan stop by stop.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">③</div>
+        <div class="step-body">
+          <h3>Every stop verified</h3>
+          <p>Real opening hours via Foursquare. Live weather forecast via Open-Meteo. Not vibes — facts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SAMPLE ITINERARY ─── -->
+  <section class="section-itinerary">
+    <div class="section-itinerary-header">
+      <div class="section-label">Sample output</div>
+      <h2 class="section-title">What your plan <em>looks like</em></h2>
+
+      <div class="itinerary-meta">
+        <span class="destination-tag">Queenstown, NZ</span>
+        <span class="days-tag">· 2 days</span>
+        <span class="verified-all"><span>✓</span> all stops verified</span>
+      </div>
+
+      <p class="pull-quote">
+        "Cafés before crowds, thrills mid-morning,
+        dinner where the locals actually eat."
+      </p>
+    </div>
+
+    <!-- Day label -->
+    <div style="padding: 8px 24px; background: var(--border); font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);">
+      Day 1 — Saturday
+    </div>
+
+    <div class="stops-list">
+
+      <!-- Stop 1 -->
+      <div class="stop-card">
+        <div class="stop-card-top">
+          <div>
+            <div class="stop-time">08:30</div>
+            <div class="stop-name">Vudu Café & Larder</div>
+          </div>
+          <div class="stop-verified">
+            <span class="check">✓</span>
+            verified
+          </div>
+        </div>
+        <p class="stop-desc">
+          Queenstown's cult breakfast spot on the lakefront. Arrive before 9 to beat
+          the gondola crowds — the fig toast and flat white are worth the early alarm.
+        </p>
+        <div class="stop-footer">
+          <div class="chips">
+            <span class="chip chip-coral">social momentum</span>
+            <span class="chip chip-amber">food fit</span>
+            <span class="chip chip-green">budget fit</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: space-between; margin-top: 12px; align-items: center;">
+          <span class="stop-cost">est. NZD 22–28</span>
+          <a href="#" class="stop-link">↗ map &amp; tickets</a>
+        </div>
+      </div>
+
+      <!-- Dashed connector -->
+      <div class="stop-divider"><div class="stop-divider-line"></div></div>
+
+      <!-- Stop 2 -->
+      <div class="stop-card">
+        <div class="stop-card-top">
+          <div>
+            <div class="stop-time">10:00</div>
+            <div class="stop-name">Skyline Gondola &amp; Luge</div>
+          </div>
+          <div class="stop-verified">
+            <span class="check">✓</span>
+            verified
+          </div>
+        </div>
+        <p class="stop-desc">
+          Gondola up, luge down — three runs is the sweet spot. Views of Lake
+          Wakatipu are legitimately jaw-dropping. Open from 09:00 daily; crowds peak
+          after 11.
+        </p>
+        <div class="stop-footer">
+          <div class="chips">
+            <span class="chip chip-coral">social momentum</span>
+            <span class="chip chip-slate">transport fit</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: space-between; margin-top: 12px; align-items: center;">
+          <span class="stop-cost">est. NZD 65–80</span>
+          <a href="#" class="stop-link">↗ map &amp; tickets</a>
+        </div>
+      </div>
+
+      <!-- Dashed connector -->
+      <div class="stop-divider"><div class="stop-divider-line"></div></div>
+
+      <!-- Stop 3 -->
+      <div class="stop-card">
+        <div class="stop-card-top">
+          <div>
+            <div class="stop-time">13:00</div>
+            <div class="stop-name">Fergburger</div>
+          </div>
+          <div class="stop-verified">
+            <span class="check">✓</span>
+            verified
+          </div>
+        </div>
+        <p class="stop-desc">
+          Legendary burger joint, open till 5 AM. The "Mr Big Stuff" is a rite of
+          passage. Queue moves fast — 13:00 hits a lull between the lunch rush and
+          afternoon ski crowd.
+        </p>
+        <div class="stop-footer">
+          <div class="chips">
+            <span class="chip chip-amber">food fit</span>
+            <span class="chip chip-green">budget fit</span>
+            <span class="chip chip-coral">social momentum</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: space-between; margin-top: 12px; align-items: center;">
+          <span class="stop-cost">est. NZD 18–26</span>
+          <a href="#" class="stop-link">↗ map &amp; tickets</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Editorial callout -->
+    <div class="editorial-callout">
+      <p>
+        "Unlike ChatGPT itineraries, every stop here was cross-checked against
+        live opening hours, forecast weather, and real social signal —
+        not hallucinated enthusiasm."
+      </p>
+      <span class="byline">— TRAIVEL · verification log</span>
+    </div>
+
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="footer-wordmark">TR<span class="ai">AI</span>VEL</div>
+    <div class="footer-tagline">AI-powered travel planning</div>
+  </footer>
+
+</body>
+</html>
