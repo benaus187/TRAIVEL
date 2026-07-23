@@ -27,3 +27,6 @@ hook*.png
 Folder_structure.png
 ~$*
 *.tmp
+
+# Design exploration (not app logic — kept locally only)
+design/
