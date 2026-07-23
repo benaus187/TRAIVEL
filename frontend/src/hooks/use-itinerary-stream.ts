@@ -14,12 +14,21 @@ export type WeatherDay = {
   location?: string;
 };
 
-export type TrendItem = {
-  name: string;
-  rating?: number;
-  review_count?: number;
-  summary?: string;
-};
+export type TrendItem =
+  | {
+      source: "google_places";
+      name: string;
+      rating?: number;
+      review_count?: number;
+      summary?: string;
+    }
+  | {
+      source: "youtube";
+      title: string;
+      channel: string;
+      view_count: number;
+      video_id: string;
+    };
 
 export function useItineraryStream() {
   const [stops, setStops] = useState<Stop[]>([]);

@@ -84,6 +84,7 @@ async def discover_popular_places(destination: str) -> list[dict]:
         editorial = p.get("editorialSummary", {})
         summary = editorial.get("text", "") if isinstance(editorial, dict) else str(editorial)
         results.append({
+            "source": "google_places",
             "name": name,
             "rating": p.get("rating"),
             "review_count": p.get("userRatingCount"),
