@@ -4,7 +4,7 @@ import json
 import secrets
 import string
 import urllib.parse
-from datetime import date, timedelta
+from datetime import date, datetime, timezone, timedelta
 import anthropic
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
@@ -14,8 +14,43 @@ from ..config import settings
 from ..db import get_db
 from ..services.places import search_place, discover_popular_places
 from ..services.weather import get_trip_weather
+from ..services.youtube import fetch_youtube_trending
 
 router = APIRouter(prefix="/api/itinerary", tags=["itinerary"])
+
+_YOUTUBE_CACHE_TTL_HOURS = 24
+
+
+async def _get_cached_youtube_trends(destination: str) -> list[dict]:
+    """YouTube search.list costs 100 quota units/call (~100 free calls/day) — cache aggressively.
+    The cache is supplementary: any Supabase error here must not abort itinerary generation."""
+    cache_key = f"youtube:{destination}"
+
+    try:
+        db = get_db()
+        cached = db.table("trend_cache").select("data,cached_at").eq("destination", cache_key).execute()
+        if cached.data:
+            cached_at = datetime.fromisoformat(cached.data[0]["cached_at"].replace("Z", "+00:00"))
+            age_hours = (datetime.now(timezone.utc) - cached_at).total_seconds() / 3600
+            if age_hours < _YOUTUBE_CACHE_TTL_HOURS:
+                return cached.data[0]["data"] or []
+    except Exception:
+        pass
+
+    trends = await fetch_youtube_trending(destination)
+
+    if trends:
+        try:
+            db = get_db()
+            db.table("trend_cache").upsert({
+                "destination": cache_key,
+                "data": trends,
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+            }).execute()
+        except Exception:
+            pass
+
+    return trends
 
 
 def _extract_user_id(authorization: str | None) -> str | None:
@@ -104,6 +139,7 @@ class TripBrief(BaseModel):
 def _build_prompt(
     brief: TripBrief,
     popular_places: list[dict] | None = None,
+    youtube_trends: list[dict] | None = None,
     weather_forecast: list[dict] | None = None,
 ) -> str:
     avoid_str = f"\nAvoid: {', '.join(brief.avoid)}" if brief.avoid else ""
@@ -123,6 +159,19 @@ Currently popular places people love in {brief.destination} (from Google Places,
 {chr(10).join(lines)}
 
 Prioritise including these places where they fit the traveller's interests. Assign "social momentum" reason code to stops from this list."""
+
+    youtube_str = ""
+    if youtube_trends:
+        lines = [
+            f"- \"{v['title']}\" by {v['channel']} ({v['view_count']:,} views)"
+            for v in youtube_trends[:5]
+        ]
+        youtube_str = f"""
+
+Recent popular YouTube travel guides about {brief.destination}:
+{chr(10).join(lines)}
+
+If a place these videos feature fits the traveller's interests, consider including it and assign "social momentum" reason code."""
 
     weather_str = ""
     if weather_forecast:
@@ -176,7 +225,7 @@ Traveller profile:
 - Interests: {interests_str}
 - Total trip budget: ${brief.budget_usd_total} USD (~${per_day}/day). {currency_str}Plan stops, meals, and transport to stay within this total.
 - Pace: {brief.pace}
-- Preferred transport: {transport_label}{avoid_str}{flight_str}{places_str}{weather_str}{accommodation_str}
+- Preferred transport: {transport_label}{avoid_str}{flight_str}{places_str}{youtube_str}{weather_str}{accommodation_str}
 
 Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). For each stop:
 - Set the `day` field to 1 for Day 1, 2 for Day 2, etc. (required)
@@ -255,22 +304,24 @@ async def generate_itinerary(brief: TripBrief, authorization: str | None = Heade
             client = get_client()
             start_date = brief.start_date or (date.today() + timedelta(days=7)).isoformat()
 
-            # 1. Fetch popular places + weather BEFORE Claude — use both in prompt
-            popular_places, weather_forecast = await asyncio.gather(
+            # 1. Fetch popular places + YouTube trends + weather BEFORE Claude — use all in prompt
+            popular_places, youtube_trends, weather_forecast = await asyncio.gather(
                 discover_popular_places(brief.destination),
+                _get_cached_youtube_trends(brief.destination),
                 get_trip_weather(brief.destination, start_date, brief.days),
             )
 
-            if popular_places:
-                yield f"data: {json.dumps({'type': 'trends', 'trends': popular_places})}\n\n"
+            combined_trends = popular_places + youtube_trends
+            if combined_trends:
+                yield f"data: {json.dumps({'type': 'trends', 'trends': combined_trends})}\n\n"
 
-            # 2. Generate itinerary with Claude — prompt includes places + weather
+            # 2. Generate itinerary with Claude — prompt includes places + youtube + weather
             message = client.messages.create(
                 model="claude-opus-4-8",
                 max_tokens=8192,
                 tools=[ITINERARY_TOOL],
                 tool_choice={"type": "tool", "name": "create_itinerary"},
-                messages=[{"role": "user", "content": _build_prompt(brief, popular_places, weather_forecast)}],
+                messages=[{"role": "user", "content": _build_prompt(brief, popular_places, youtube_trends, weather_forecast)}],
             )
 
             collected_stops: list[dict] = []

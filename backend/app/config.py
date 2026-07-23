@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_key: str
     google_places_api_key: str = ""
+    youtube_api_key: str = ""
     x_bearer_token: str = ""
     allowed_origins: str = "http://localhost:3000"
 
