@@ -1,18 +1,18 @@
 import asyncio
-import base64
 import json
 import secrets
 import string
 import urllib.parse
 from datetime import date, datetime, timezone, timedelta
 import anthropic
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from ..config import settings
 from ..db import get_db
 from ..services.places import search_place, discover_popular_places
+from ..services.quota import check_and_reserve_quota
 from ..services.weather import get_trip_weather
 from ..services.youtube import fetch_youtube_trending
 
@@ -53,16 +53,20 @@ async def _get_cached_youtube_trends(destination: str) -> list[dict]:
     return trends
 
 
-def _extract_user_id(authorization: str | None) -> str | None:
+def _extract_claims(authorization: str | None) -> tuple[str | None, str | None]:
+    """Returns (user_id, email) for a Supabase-verified JWT, or (None, None) if
+    missing/invalid/expired. Verification is a real call to Supabase Auth
+    (auth.get_user) rather than a local decode — quota tier (including the
+    manager/premium unlimited bypass) is a security-sensitive decision made
+    from this claim, so an unverified payload decode is not acceptable here."""
     if not authorization or not authorization.startswith("Bearer "):
-        return None
+        return None, None
     try:
-        payload_b64 = authorization[7:].split(".")[1]
-        payload_b64 += "=" * (4 - len(payload_b64) % 4)
-        payload = json.loads(base64.b64decode(payload_b64))
-        return payload.get("sub")
+        response = get_db().auth.get_user(authorization[7:])
+        user = response.user
+        return user.id, user.email
     except Exception:
-        return None
+        return None, None
 
 
 def _generate_share_slug() -> str:
@@ -296,8 +300,17 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None =
 
 
 @router.post("/generate")
-async def generate_itinerary(brief: TripBrief, authorization: str | None = Header(default=None)) -> StreamingResponse:
-    user_id = _extract_user_id(authorization)
+async def generate_itinerary(
+    brief: TripBrief,
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_anon_id: str | None = Header(default=None, alias="X-Anon-Id"),
+) -> StreamingResponse:
+    user_id, email = _extract_claims(authorization)
+
+    quota_error = check_and_reserve_quota(user_id, email, request, x_anon_id)
+    if quota_error is not None:
+        raise HTTPException(status_code=429, detail=quota_error.model_dump())
 
     async def stream():
         try:

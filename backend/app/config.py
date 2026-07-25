@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     youtube_api_key: str = ""
     x_bearer_token: str = ""
     allowed_origins: str = "http://localhost:3000"
+    manager_emails: str = ""
 
     model_config = {"env_file": ".env"}
 

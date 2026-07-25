@@ -199,13 +199,14 @@ const StopSchema = z.object({
 ## Supabase schema
 
 ```sql
-users         -- Auth profiles (managed by Supabase Auth)
-trips         -- destination, dates, brief, share_slug
-itineraries   -- generated output linked to a trip
-stops         -- individual stops with all fields above
-place_cache   -- Google Places responses keyed by place_id
-weather_cache -- Open-Meteo responses keyed by dest+date
-trend_cache   -- Trend scores keyed by destination
+users             -- Auth profiles (managed by Supabase Auth); plan (free/premium) gates quota
+trips             -- destination, dates, brief, share_slug
+itineraries       -- generated output linked to a trip
+stops             -- individual stops with all fields above
+place_cache       -- Google Places responses keyed by place_id
+weather_cache     -- Open-Meteo responses keyed by dest+date
+trend_cache       -- Trend scores keyed by destination
+generation_usage  -- daily per-identity generation counts (quota enforcement)
 ```
 
 All tables use Row Level Security (RLS). Users can only read/write their own rows. Public share URLs are served via a `SECURITY DEFINER` function that bypasses RLS only for the share slug lookup.
@@ -258,6 +259,7 @@ ANTHROPIC_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_KEY=
 GOOGLE_PLACES_API_KEY=
+MANAGER_EMAILS=
 ```
 
 ---

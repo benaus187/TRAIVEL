@@ -45,3 +45,14 @@ export const TripBriefSchema = z.object({
 });
 
 export type TripBrief = z.infer<typeof TripBriefSchema>;
+
+export const QuotaExceededSchema = z.object({
+  error: z.literal("quota_exceeded"),
+  tier: z.enum(["anonymous", "free"]),
+  limit: z.number(),
+  used: z.number(),
+  reset_at: z.string(),
+  message: z.string(),
+});
+
+export type QuotaExceededError = z.infer<typeof QuotaExceededSchema>;

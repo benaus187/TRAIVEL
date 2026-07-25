@@ -24,6 +24,19 @@ Use `tool_use` with `tool_choice: {"type": "tool"}` to force structured JSON —
 
 Responses stream from FastAPI → Next.js via **SSE**. The frontend uses TanStack Query + an EventSource to consume the stream and progressively render stops.
 
+## Usage Quota
+
+`/api/itinerary/generate` enforces a daily generation quota, checked (and reserved atomically via `increment_generation_usage` RPC) before the Claude API call:
+
+| Tier | Identified by | Limit |
+|------|----------------|-------|
+| Manager | email in `MANAGER_EMAILS` env var | unlimited |
+| Premium | `users.plan = 'premium'` | unlimited |
+| Signed-in free | Supabase JWT `sub` | 5/day |
+| Anonymous | `X-Forwarded-For` IP + `X-Anon-Id` header | 1/day |
+
+Blocked requests return **HTTP 429** with body `{"detail": {"error": "quota_exceeded", "tier", "limit", "used", "reset_at", "message"}}` (see `QuotaExceededSchema` in `frontend/src/lib/schemas/itinerary.ts`).
+
 ## Stop Schema
 
 **Pydantic (backend):**
@@ -58,12 +71,13 @@ const StopSchema = z.object({
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Auth profiles |
+| `users` | Auth profiles. `plan` column (`free`/`premium`) gates unlimited quota — writable only by service role / dashboard, protected by a trigger that reverts client-side self-upgrades |
 | `trips` | Trip metadata (destination, dates, brief) |
 | `itineraries` | Generated itinerary per trip |
 | `stops` | Individual stops belonging to an itinerary |
 | `place_cache` | Foursquare responses keyed by place_id |
 | `weather_cache` | Open-Meteo responses keyed by dest+date |
 | `trend_cache` | X API trend scores keyed by destination |
+| `generation_usage` | Daily per-identity generation counter (quota enforcement) |
 
 All tables use Row Level Security (RLS). Users can only read/write their own rows.
