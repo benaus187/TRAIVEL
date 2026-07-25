@@ -41,7 +41,7 @@ const PRESET_AVOID = [
 type GeoSuggestion = { name: string; admin1: string; country: string };
 
 export default function PlanPage() {
-  const { stops, state, error, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
+  const { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
   const { currency, symbol, rate } = useCurrencyStore();
   const [brief, setBrief] = useState<Partial<TripBrief>>({
@@ -500,7 +500,17 @@ export default function PlanPage() {
         {state === "error" && (
           <div className="p-4 rounded-md bg-destructive/10 text-destructive text-sm space-y-3">
             <p>{error}</p>
-            {lastSubmittedBriefRef.current && (
+            {quotaError?.tier === "anonymous" && (
+              <a href="/login" className="font-mono text-xs underline">
+                Sign in for 5 generations/day
+              </a>
+            )}
+            {quotaError?.tier === "free" && (
+              <p className="font-mono text-xs text-muted-foreground">
+                Free plan: 5/day. Contact us to upgrade to Premium for unlimited generations.
+              </p>
+            )}
+            {!quotaError && lastSubmittedBriefRef.current && (
               <Button
                 variant="outline"
                 size="sm"

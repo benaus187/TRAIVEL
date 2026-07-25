@@ -51,7 +51,7 @@ supabase
 
 ## AI Models
 
-- **Claude Opus 4.8** (`claude-opus-4-8`) — all coding and high-performance tasks: itinerary generation, tool_use structured output, trend scoring logic, verification orchestration
+- **Claude Opus 5** (`claude-opus-5`) — all coding and high-performance tasks: itinerary generation, tool_use structured output, trend scoring logic, verification orchestration
 - **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) — lightweight tasks only: reason code labelling, short verification summaries, simple text transforms
 
 ## External Services

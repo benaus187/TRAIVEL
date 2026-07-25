@@ -5,7 +5,7 @@ description: >
   Use this agent to review new endpoints, React components, Pydantic schemas,
   Zod validators, or any critical logic before committing. Reports bugs, security
   issues, and improvement suggestions. Does NOT rewrite code — reports only.
-model: claude-sonnet-4-6
+model: claude-sonnet-5
 tools:
   - Read
   - Glob

@@ -38,7 +38,7 @@ Browser
 ┌─────────────────────────────────┐
 │  FastAPI — Railway (~$5/mo)     │
 │                                 │
-│  POST /api/itinerary/generate   │◄─── Claude Opus 4.8
+│  POST /api/itinerary/generate   │◄─── Claude Opus 5
 │  POST /api/places/verify        │◄─── Google Places API
 │  GET  /api/weather/{dest}/{dt}  │◄─── Open-Meteo (free)
 │  GET  /api/trends/{destination} │◄─── Wikipedia pageviews
@@ -70,7 +70,7 @@ User submits brief
       ├─► Fetch weather forecast (Open-Meteo geocode → forecast)
       │
       ▼
-Claude Opus 4.8 — tool_use with forced JSON schema
+Claude Opus 5 — tool_use with forced JSON schema
   • Receives: destination, dates, interests, budget, pace, avoid list,
               popular places, day-by-day weather forecast
   • Returns: structured stops with time, name, description, reason_codes
@@ -106,7 +106,7 @@ Save trip + itinerary + stops to Supabase
 - **supabase-py** — DB client
 
 ### AI models
-- `claude-opus-4-8` — itinerary generation (tool_use structured output)
+- `claude-opus-5` — itinerary generation (tool_use structured output)
 - `claude-haiku-4-5-20251001` — lightweight tasks (reason code labelling, summaries)
 
 ### External services
@@ -199,13 +199,14 @@ const StopSchema = z.object({
 ## Supabase schema
 
 ```sql
-users         -- Auth profiles (managed by Supabase Auth)
-trips         -- destination, dates, brief, share_slug
-itineraries   -- generated output linked to a trip
-stops         -- individual stops with all fields above
-place_cache   -- Google Places responses keyed by place_id
-weather_cache -- Open-Meteo responses keyed by dest+date
-trend_cache   -- Trend scores keyed by destination
+users             -- Auth profiles (managed by Supabase Auth); plan (free/premium) gates quota
+trips             -- destination, dates, brief, share_slug
+itineraries       -- generated output linked to a trip
+stops             -- individual stops with all fields above
+place_cache       -- Google Places responses keyed by place_id
+weather_cache     -- Open-Meteo responses keyed by dest+date
+trend_cache       -- Trend scores keyed by destination
+generation_usage  -- daily per-identity generation counts (quota enforcement)
 ```
 
 All tables use Row Level Security (RLS). Users can only read/write their own rows. Public share URLs are served via a `SECURITY DEFINER` function that bypasses RLS only for the share slug lookup.
@@ -258,6 +259,7 @@ ANTHROPIC_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_KEY=
 GOOGLE_PLACES_API_KEY=
+MANAGER_EMAILS=
 ```
 
 ---

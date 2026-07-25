@@ -48,4 +48,4 @@ Scaffold a new FastAPI endpoint for TRAIVEL. Follow this exact pattern:
 - Always async (`async def`, `await httpx.AsyncClient`)
 - Never use `requests` library — always `httpx`
 - Cache external API responses to the matching Supabase `*_cache` table
-- Model for Claude calls: `claude-opus-4-8` (generation) or `claude-haiku-4-5-20251001` (light)
+- Model for Claude calls: `claude-opus-5` (generation) or `claude-haiku-4-5-20251001` (light)

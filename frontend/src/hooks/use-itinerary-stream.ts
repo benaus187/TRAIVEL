@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Stop, StopSchema, TripBrief } from "@/lib/schemas/itinerary";
+import { Stop, StopSchema, TripBrief, QuotaExceededError, QuotaExceededSchema } from "@/lib/schemas/itinerary";
+import { getAnonId } from "@/lib/anon-id";
 
 type StreamState = "idle" | "streaming" | "verifying" | "done" | "error";
 
@@ -34,6 +35,7 @@ export function useItineraryStream() {
   const [stops, setStops] = useState<Stop[]>([]);
   const [state, setState] = useState<StreamState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [quotaError, setQuotaError] = useState<QuotaExceededError | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
   const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
@@ -59,6 +61,7 @@ export function useItineraryStream() {
   const generate = useCallback(async (brief: TripBrief, accessToken?: string | null) => {
     setStops([]);
     setError(null);
+    setQuotaError(null);
     setTripId(null);
     setShareSlug(null);
     setWeather(null);
@@ -72,6 +75,8 @@ export function useItineraryStream() {
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+      const anonId = getAnonId();
+      if (anonId) headers["X-Anon-Id"] = anonId;
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/itinerary/generate`,
@@ -84,6 +89,20 @@ export function useItineraryStream() {
       );
 
       if (!res.ok || !res.body) {
+        if (res.status === 429) {
+          try {
+            const body = await res.json();
+            const parsed = QuotaExceededSchema.safeParse(body?.detail);
+            if (parsed.success) {
+              setQuotaError(parsed.data);
+              setError(parsed.data.message);
+              setState("error");
+              return;
+            }
+          } catch {
+            // fall through to generic error below
+          }
+        }
         throw new Error(`Server error: ${res.status}`);
       }
 
@@ -156,11 +175,12 @@ export function useItineraryStream() {
     setStops([]);
     setState("idle");
     setError(null);
+    setQuotaError(null);
     setTripId(null);
     setShareSlug(null);
     setWeather(null);
     setTrends(null);
   }, []);
 
-  return { stops, state, error, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };
+  return { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };
 }
