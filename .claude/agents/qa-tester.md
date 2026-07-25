@@ -6,7 +6,7 @@ description: >
   feature and want systematic test coverage — form validation, SSE streaming,
   API error handling, Supabase writes. Reports bugs and suggests fixes but
   does NOT write production code.
-model: claude-sonnet-4-6
+model: claude-sonnet-5
 tools:
   - Read
   - Glob

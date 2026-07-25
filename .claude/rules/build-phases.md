@@ -32,7 +32,7 @@ alwaysApply: true
 ## Phase 1 Next Steps
 
 - Trip brief form: destination, dates, interests, budget, pace, avoid
-- FastAPI `POST /api/itinerary/generate` → Claude Opus 4.8 `tool_use` → SSE stream
+- FastAPI `POST /api/itinerary/generate` → Claude Opus 5 `tool_use` → SSE stream
 - Frontend nhận stream → render stops theo thời gian thực
 - Reason code chips có màu theo type
 - Regenerate button + lưu vào Supabase

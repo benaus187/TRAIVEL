@@ -17,7 +17,7 @@ alwaysApply: false
 
 ## Claude Integration Pattern
 
-- **Model for itinerary generation:** `claude-opus-4-8` (high-performance, structured output)
+- **Model for itinerary generation:** `claude-opus-5` (high-performance, structured output)
 - **Model for light tasks:** `claude-haiku-4-5-20251001` (reason code labelling, summaries)
 
 Use `tool_use` with `tool_choice: {"type": "tool"}` to force structured JSON — never plain text completion for itinerary output.

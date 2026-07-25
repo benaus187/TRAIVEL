@@ -21,7 +21,7 @@ You are a code reviewer for the TRAIVEL project. Review TypeScript (Next.js 15 A
 
 - [ ] Pydantic models for all request bodies and response shapes
 - [ ] Async endpoints (`async def`) — no blocking I/O with `requests`, use `httpx` async
-- [ ] Claude API calls use `claude-opus-4-8` for generation, `claude-haiku-4-5-20251001` for light tasks
+- [ ] Claude API calls use `claude-opus-5` for generation, `claude-haiku-4-5-20251001` for light tasks
 - [ ] `tool_use` with `tool_choice: {"type": "tool"}` for any structured JSON output
 - [ ] External API responses cached to Supabase (`place_cache`, `weather_cache`, `trend_cache`) before returning
 - [ ] No secrets in code — read from environment

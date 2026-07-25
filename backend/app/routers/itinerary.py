@@ -317,7 +317,7 @@ async def generate_itinerary(brief: TripBrief, authorization: str | None = Heade
 
             # 2. Generate itinerary with Claude — prompt includes places + youtube + weather
             message = client.messages.create(
-                model="claude-opus-4-8",
+                model="claude-opus-5",
                 max_tokens=8192,
                 tools=[ITINERARY_TOOL],
                 tool_choice={"type": "tool", "name": "create_itinerary"},

@@ -38,7 +38,7 @@ Browser
 ┌─────────────────────────────────┐
 │  FastAPI — Railway (~$5/mo)     │
 │                                 │
-│  POST /api/itinerary/generate   │◄─── Claude Opus 4.8
+│  POST /api/itinerary/generate   │◄─── Claude Opus 5
 │  POST /api/places/verify        │◄─── Google Places API
 │  GET  /api/weather/{dest}/{dt}  │◄─── Open-Meteo (free)
 │  GET  /api/trends/{destination} │◄─── Wikipedia pageviews
@@ -70,7 +70,7 @@ User submits brief
       ├─► Fetch weather forecast (Open-Meteo geocode → forecast)
       │
       ▼
-Claude Opus 4.8 — tool_use with forced JSON schema
+Claude Opus 5 — tool_use with forced JSON schema
   • Receives: destination, dates, interests, budget, pace, avoid list,
               popular places, day-by-day weather forecast
   • Returns: structured stops with time, name, description, reason_codes
@@ -106,7 +106,7 @@ Save trip + itinerary + stops to Supabase
 - **supabase-py** — DB client
 
 ### AI models
-- `claude-opus-4-8` — itinerary generation (tool_use structured output)
+- `claude-opus-5` — itinerary generation (tool_use structured output)
 - `claude-haiku-4-5-20251001` — lightweight tasks (reason code labelling, summaries)
 
 ### External services
