@@ -1,3 +1,5 @@
+from typing import Literal
+
 import stripe
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
@@ -11,7 +13,7 @@ router = APIRouter(prefix="/api/billing", tags=["billing"])
 
 
 class CheckoutRequest(BaseModel):
-    interval: str  # "monthly" | "annual"
+    interval: Literal["monthly", "annual"]
 
 
 @router.get("/me")
@@ -30,12 +32,24 @@ async def create_checkout(body: CheckoutRequest, authorization: str | None = Hea
     user_id, email = _extract_claims(authorization)
     if not user_id or not email:
         raise HTTPException(status_code=401, detail="sign in required")
+    row = get_db().table("users").select("plan,subscription_status,stripe_customer_id").eq("id", user_id).limit(1).execute()
+    user_row = row.data[0] if row.data else None
+    # Block on any non-terminal subscription status, not just plan == "premium" —
+    # the webhook flips plan to "free" on past_due/unpaid/incomplete even though
+    # the Stripe subscription is still open, so a cached "free" plan alone isn't
+    # enough to know it's safe to start a second concurrent subscription.
+    if user_row and (
+        user_row["plan"] == "premium"
+        or user_row["subscription_status"] in ("active", "trialing", "past_due", "unpaid", "incomplete")
+    ):
+        raise HTTPException(status_code=400, detail="already premium — manage your subscription in the billing portal")
+    customer_id = user_row["stripe_customer_id"] if user_row else None
     price_id = (
         settings.stripe_price_id_monthly if body.interval == "monthly" else settings.stripe_price_id_annual
     )
     if not price_id:
         raise HTTPException(status_code=400, detail="invalid interval")
-    url = stripe_service.create_checkout_session(user_id, email, price_id)
+    url = stripe_service.create_checkout_session(user_id, email, price_id, customer_id)
     return {"url": url}
 
 
@@ -70,7 +84,9 @@ async def stripe_webhook(
     # plan flip is a paid-feature correctness bug, not a soft-degradable cache.
     db = get_db()
     event_type = event["type"]
-    data = event["data"]["object"]
+    # stripe-python 15.x's StripeObject no longer subclasses dict (no .get()) —
+    # convert once so the .get(...) calls below work as plain dict lookups.
+    data = event["data"]["object"].to_dict()
 
     if event_type == "checkout.session.completed":
         user_id = data.get("client_reference_id")
