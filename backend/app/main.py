@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import itinerary, places, weather, trends
+from .routers import billing, itinerary, places, weather, trends
 
 app = FastAPI(title="TRAIVEL API", version="0.1.0")
 
@@ -15,6 +15,7 @@ app.add_middleware(
 )
 
 app.include_router(itinerary.router)
+app.include_router(billing.router)
 app.include_router(places.router)
 app.include_router(weather.router)
 app.include_router(trends.router)
