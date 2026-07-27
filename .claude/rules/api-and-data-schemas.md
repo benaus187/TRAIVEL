@@ -10,10 +10,10 @@ alwaysApply: false
 
 | Method | Path | Integration |
 |--------|------|-------------|
-| POST | `/api/itinerary/generate` | Claude Sonnet `tool_use` → SSE stream |
-| POST | `/api/places/verify` | Foursquare → writes to `place_cache` |
+| POST | `/api/itinerary/generate` | Claude Opus 5 `tool_use` → SSE stream. Google Places verification + YouTube trend signals happen **inline** during this call (see below), not as separate requests |
 | GET | `/api/weather/{dest}/{date}` | Open-Meteo → writes to `weather_cache` |
-| GET | `/api/trends/{destination}` | X API → trend scores |
+| POST | `/api/places/verify` | Orphaned stub (`backend/app/routers/places.py`) — returns a placeholder, not called by frontend. Real place verification is `services/places.py` (Google Places `searchText`), called inline from `/api/itinerary/generate` |
+| GET | `/api/trends/{destination}` | Orphaned (`backend/app/routers/trends.py`, uses HackerNews + Wikipedia) — not called by frontend. Real trend signal is `services/youtube.py` (YouTube Data API v3), called inline from `/api/itinerary/generate` and streamed as an SSE `trends` event |
 
 ## Claude Integration Pattern
 
@@ -75,9 +75,9 @@ const StopSchema = z.object({
 | `trips` | Trip metadata (destination, dates, brief) |
 | `itineraries` | Generated itinerary per trip |
 | `stops` | Individual stops belonging to an itinerary |
-| `place_cache` | Foursquare responses keyed by place_id |
+| `place_cache` | Google Places responses keyed by place_id |
 | `weather_cache` | Open-Meteo responses keyed by dest+date |
-| `trend_cache` | X API trend scores keyed by destination |
+| `trend_cache` | YouTube trending-video scores keyed by `youtube:{destination}` (also holds unused HackerNews/Wikipedia entries from the orphaned `/api/trends` route) |
 | `generation_usage` | Daily per-identity generation counter (quota enforcement) |
 
 All tables use Row Level Security (RLS). Users can only read/write their own rows.

@@ -10,5 +10,5 @@ class VerifyRequest(BaseModel):
 
 @router.post("/verify")
 async def verify_places(body: VerifyRequest) -> dict:
-    # Phase 2: Foursquare lookup + cache to place_cache
-    return {"status": "Phase 2 not yet implemented"}
+    # Orphaned stub — real place verification runs inline in /api/itinerary/generate via services/places.py (Google Places)
+    return {"status": "not implemented — see /api/itinerary/generate"}

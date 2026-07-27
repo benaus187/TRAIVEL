@@ -12,10 +12,10 @@ Browser
   └─▶ Next.js frontend — Vercel Hobby (free)
         └─▶ FastAPI backend — Railway (~$5/mo)
               ├─▶ Supabase PostgreSQL (free tier)
-              ├─▶ Claude API (Sonnet / Haiku)
-              ├─▶ Foursquare Places API
+              ├─▶ Claude API (Opus 5 / Haiku)
+              ├─▶ Google Places API
               ├─▶ Open-Meteo
-              ├─▶ X (Twitter) API
+              ├─▶ YouTube Data API v3
               └─▶ Mapbox (client-side only)
 ```
 
@@ -31,7 +31,7 @@ No shared build tooling between the two. Each has its own dependencies and deplo
 
 ## Why FastAPI is separate (not Next.js API routes)
 
-Railway supports persistent connections needed for long-running SSE streams. Vercel serverless functions have an 800 s execution limit — Claude itinerary generation + streaming can exceed this. FastAPI on Railway also gives access to the Python AI/data ecosystem (pandas for trend scoring, Anthropic Python SDK).
+Railway supports persistent connections needed for long-running SSE streams. Vercel serverless functions have an 800 s execution limit — Claude itinerary generation + streaming can exceed this. FastAPI on Railway also gives access to the Python AI/data ecosystem (Anthropic Python SDK, httpx for external API calls).
 
 ## Frontend ↔ Backend communication
 

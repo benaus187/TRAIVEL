@@ -35,7 +35,6 @@ alwaysApply: false
 | AI SDK | anthropic (official Python SDK) |
 | Validation | Pydantic v2 |
 | HTTP client | httpx (async) |
-| Data processing | pandas (trend scoring) |
 | DB client | supabase-py |
 
 **requirements.txt:**
@@ -61,8 +60,8 @@ supabase
 | Supabase Free | PostgreSQL + Google OAuth | $0 |
 | Vercel Hobby | Frontend hosting | $0 |
 | Mapbox | Maps (50K loads/mo free) | $0 |
-| Foursquare Places | Place info + hours (950 calls/day free) | $0 |
+| Google Places API (New) | Place verification + discovery (searchText) | pay-as-you-go, low volume |
 | Open-Meteo | Weather forecast (no key needed) | $0 |
 | Railway | FastAPI hosting | ~$5/mo |
-| X (Twitter) API Basic | Trend signals (~1M post reads) | ~$5/mo |
+| YouTube Data API v3 | Trend signals (trending videos per destination) | $0 (free quota) |
 | Claude API | AI generation | ~$15–20/mo |

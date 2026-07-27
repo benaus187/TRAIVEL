@@ -23,7 +23,7 @@ Gather, verify, and summarize information. You do NOT write production code. You
 ## Project context
 
 - Stack: Next.js 15 (App Router, TypeScript, Tailwind v4), FastAPI (Python, Pydantic v2), Supabase, Claude API
-- External APIs in use: Foursquare Places, Open-Meteo, X (Twitter) API, Mapbox
+- External APIs in use: Google Places, Open-Meteo, YouTube Data API v3, Mapbox
 - Budget constraint: ~$30/month total for all external services
 
 ## Research approach

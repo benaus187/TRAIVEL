@@ -48,7 +48,7 @@ Focus areas in priority order:
 
 ### Supabase
 - Concurrent generate calls from same session → duplicate trip rows?
-- Foursquare returns null for all stops → itinerary still saves with `verified: false`?
+- Google Places returns null for all stops → itinerary still saves with `verified: false`?
 
 ## Output format
 

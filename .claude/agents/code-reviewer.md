@@ -42,7 +42,7 @@ You are a senior code reviewer for the TRAIVEL project — an AI-powered travel 
 - Reason code values must match canonical enum: `social momentum`, `transport fit`, `food fit`, `budget fit`, `weather alternate ready`
 
 ### 4. Performance
-- N+1 query patterns (e.g., calling Foursquare per-stop in a loop without batching)
+- N+1 query patterns (e.g., calling Google Places per-stop in a loop without batching)
 - Unnecessary re-renders (missing `useCallback`/`useMemo` on hot paths)
 - Blocking sync code inside async FastAPI handlers
 

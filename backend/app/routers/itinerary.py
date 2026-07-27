@@ -112,7 +112,7 @@ ITINERARY_TOOL: anthropic.types.ToolParam = {
                             },
                             "minItems": 1,
                         },
-                        "place_id": {"type": "string", "description": "Foursquare place ID if known, otherwise null"},
+                        "place_id": {"type": "string", "description": "Google Places place ID if known, otherwise null"},
                         "verified": {"type": "boolean", "description": "Always false at generation time — set by verification layer"},
                         "weather_alternate": {"type": "string", "description": "Indoor alternative if weather is bad, or null"},
                         "transit_note": {"type": "string", "description": "How to travel from the previous stop to this one (null for first stop of each day). E.g. 'Take Metro Line 2 from Shinjuku to Harajuku (~5 min, ¥170)' or 'Walk 12 min south along the river'."},
