@@ -102,9 +102,15 @@ async def stripe_webhook(
         customer_id = data.get("customer")
         status = data.get("status") if event_type == "customer.subscription.updated" else "canceled"
         plan = "premium" if status in ("active", "trialing") else "free"
-        db.table("users").update({
+        result = db.table("users").update({
             "plan": plan,
             "subscription_status": status,
         }).eq("stripe_customer_id", customer_id).execute()
+        # An empty result means no user row has this stripe_customer_id yet (e.g. an
+        # event-ordering race right after checkout) — a bare update() call doesn't
+        # raise on zero matched rows, so without this check the plan/status
+        # transition is silently lost instead of triggering a Stripe retry.
+        if not result.data:
+            raise HTTPException(status_code=500, detail=f"no user found for stripe_customer_id={customer_id}")
 
     return {"received": True}

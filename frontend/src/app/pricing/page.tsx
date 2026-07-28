@@ -14,6 +14,7 @@ export default function PricingPage() {
   const { plan, loading: planLoading } = usePlan();
   const [interval, setInterval] = useState<Interval>("monthly");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isPremium = plan?.plan === "premium";
 
@@ -23,6 +24,7 @@ export default function PricingPage() {
       return;
     }
     setBusy(true);
+    setError(null);
     try {
       const token = await getAccessToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/checkout`, {
@@ -34,7 +36,11 @@ export default function PricingPage() {
         body: JSON.stringify({ interval }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (!res.ok) {
+        setError(typeof data.detail === "string" ? data.detail : "Could not start checkout — try again.");
+        return;
+      }
+      window.location.href = data.url;
     } finally {
       setBusy(false);
     }
@@ -42,6 +48,7 @@ export default function PricingPage() {
 
   async function handleManage() {
     setBusy(true);
+    setError(null);
     try {
       const token = await getAccessToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/portal`, {
@@ -49,7 +56,11 @@ export default function PricingPage() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (!res.ok) {
+        setError(typeof data.detail === "string" ? data.detail : "Could not open billing portal — try again.");
+        return;
+      }
+      window.location.href = data.url;
     } finally {
       setBusy(false);
     }
@@ -67,6 +78,10 @@ export default function PricingPage() {
       <Suspense fallback={null}>
         <CancelBanner />
       </Suspense>
+
+      {error && (
+        <p className="text-center font-mono text-xs text-destructive">{error}</p>
+      )}
 
       {!isPremium && (
         <div className="flex justify-center">
