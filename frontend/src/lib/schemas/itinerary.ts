@@ -35,7 +35,7 @@ export const TripBriefSchema = z.object({
   days: z.coerce.number().int().min(1).max(14),
   start_date: z.string().optional(),
   interests: z.array(z.string()).min(1, "Pick at least one interest"),
-  budget_usd_total: z.coerce.number().int().min(0).max(20000),
+  budget_usd_total: z.coerce.number().int().min(1, "Enter a trip budget").max(20000),
   currency: z.string().default("USD"),
   pace: z.enum(["relaxed", "moderate", "packed"]),
   avoid: z.array(z.string()),

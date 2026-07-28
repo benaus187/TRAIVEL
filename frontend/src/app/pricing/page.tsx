@@ -144,17 +144,16 @@ export default function PricingPage() {
               <li>Everything in Free</li>
               <li>Priority support</li>
             </ul>
-            {!planLoading && (
-              isPremium ? (
-                <Button className="w-full" disabled={busy} onClick={handleManage}>
-                  {busy ? "Loading…" : "Manage subscription"}
-                </Button>
-              ) : (
-                <Button className="w-full" disabled={busy} onClick={handleUpgrade}>
-                  {busy ? "Loading…" : "Upgrade to Premium"}
-                </Button>
-              )
-            )}
+            {/* Render immediately (defaulting to the free-tier action) instead of
+                waiting on planLoading — usePlan()'s fetch takes ~1-2s, and hiding
+                the button until then reads as the click having done nothing. */}
+            <Button
+              className="w-full"
+              disabled={busy || planLoading}
+              onClick={isPremium ? handleManage : handleUpgrade}
+            >
+              {planLoading || busy ? "Loading…" : isPremium ? "Manage subscription" : "Upgrade to Premium"}
+            </Button>
           </CardContent>
         </Card>
       </div>

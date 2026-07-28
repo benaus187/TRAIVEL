@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
@@ -21,6 +21,8 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [fetching, setFetching] = useState(true);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const confirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -55,6 +57,26 @@ export default function TripsPage() {
 
     fetchTrips();
   }, [user, supabase]);
+
+  // Two-step inline confirm (same idiom as "copy link" above) instead of a
+  // modal — click once to arm, click again within 3s to actually delete.
+  // itineraries/stops cascade-delete in Postgres (schema.sql), so a single
+  // trips row delete is enough.
+  function handleDeleteClick(id: string) {
+    if (confirmingId !== id) {
+      setConfirmingId(id);
+      if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+      confirmTimeoutRef.current = setTimeout(() => setConfirmingId(null), 3000);
+      return;
+    }
+    if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+    setConfirmingId(null);
+    supabase
+      .from("trips")
+      .delete()
+      .eq("id", id)
+      .then(() => setTrips((prev) => prev.filter((t) => t.id !== id)));
+  }
 
   if (loading || fetching) {
     return (
@@ -130,6 +152,16 @@ export default function TripsPage() {
                       className="text-xs font-mono text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors px-2"
                     >
                       {copiedSlug === slug ? "✓ copied" : "copy link"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(trip.id)}
+                      className={`text-xs font-mono transition-colors px-2 ${
+                        confirmingId === trip.id
+                          ? "text-destructive font-semibold"
+                          : "text-muted-foreground hover:text-destructive"
+                      }`}
+                    >
+                      {confirmingId === trip.id ? "confirm delete?" : "delete"}
                     </button>
                   </div>
                 </CardContent>

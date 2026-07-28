@@ -41,19 +41,21 @@ const PRESET_AVOID = [
 
 type GeoSuggestion = { name: string; admin1: string; country: string };
 
+const INITIAL_BRIEF: Partial<TripBrief> = {
+  days: 3,
+  budget_usd_total: 0,
+  pace: "moderate",
+  interests: [],
+  avoid: [],
+  transport_mode: "public_transport",
+  include_accommodation: false,
+};
+
 export default function PlanPage() {
   const { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
   const { currency, symbol, rate } = useCurrencyStore();
-  const [brief, setBrief] = useState<Partial<TripBrief>>({
-    days: 3,
-    budget_usd_total: 0,
-    pace: "moderate",
-    interests: [],
-    avoid: [],
-    transport_mode: "public_transport",
-    include_accommodation: false,
-  });
+  const [brief, setBrief] = useState<Partial<TripBrief>>(INITIAL_BRIEF);
   const [budgetLocal, setBudgetLocal] = useState(0);
   const [endDate, setEndDate] = useState("");
   const [flightNotes, setFlightNotes] = useState("");
@@ -63,6 +65,10 @@ export default function PlanPage() {
   const [suggestions, setSuggestions] = useState<GeoSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [destInput, setDestInput] = useState("");
+  // True only once the user has picked a suggestion from the geocoding
+  // dropdown — required at submit so a garbled free-typed destination
+  // (e.g. a typo that matches no real place) can't reach generation.
+  const [destinationConfirmed, setDestinationConfirmed] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -139,6 +145,7 @@ export default function PlanPage() {
   function handleDestChange(value: string) {
     setDestInput(value);
     setBrief((p) => ({ ...p, destination: value }));
+    setDestinationConfirmed(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 280);
   }
@@ -147,6 +154,7 @@ export default function PlanPage() {
     const full = [s.name, s.admin1, s.country].filter(Boolean).join(", ");
     setDestInput(full);
     setBrief((p) => ({ ...p, destination: full }));
+    setDestinationConfirmed(true);
     setShowSuggestions(false);
   }
 
@@ -203,6 +211,10 @@ export default function PlanPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!destinationConfirmed) {
+      setFormError("Select a destination from the list");
+      return;
+    }
     const budgetUsd = currency === "USD" ? budgetLocal : Math.round(budgetLocal / rate);
     const days = computedDays ?? 3;
     const parsed = TripBriefSchema.safeParse({
@@ -221,6 +233,25 @@ export default function PlanPage() {
     setActiveDay(1);
     const token = await getAccessToken();
     generate(parsed.data, token);
+  }
+
+  function handleClear() {
+    reset();
+    setBrief(INITIAL_BRIEF);
+    setBudgetLocal(0);
+    setEndDate("");
+    setFlightNotes("");
+    setFlightOpen(false);
+    setDestInput("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setDestinationConfirmed(false);
+    setCustomInput("");
+    setCustomInterests([]);
+    setShowCustomInput(false);
+    setFormError(null);
+    setLastSubmittedBrief(null);
+    setActiveDay(1);
   }
 
   const isStreaming = state === "streaming" || state === "verifying";
@@ -250,6 +281,16 @@ export default function PlanPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {hasResult && (
+            <p className="font-mono text-[10px] text-muted-foreground -mb-2">
+              Clear to edit and plan a new trip.
+            </p>
+          )}
+          {/* Locking the brief once a result exists prevents edits here from
+              silently rewriting the itinerary already shown on the right —
+              only Clear (which resets everything) or Regenerate (same brief)
+              are available past this point. */}
+          <fieldset disabled={hasResult} className="space-y-5">
           {/* Destination with autocomplete */}
           <Field label="Destination">
             <div ref={wrapperRef} className="relative">
@@ -481,6 +522,7 @@ export default function PlanPage() {
               })}
             </div>
           </Field>
+          </fieldset>
 
           {formError && (
             <p className="text-xs text-destructive font-mono">{formError}</p>
@@ -491,7 +533,7 @@ export default function PlanPage() {
               {isStreaming ? "Generating…" : hasResult ? "Regenerate" : "Generate itinerary"}
             </Button>
             {hasResult && (
-              <Button type="button" variant="outline" onClick={reset}>
+              <Button type="button" variant="outline" onClick={handleClear}>
                 Clear
               </Button>
             )}
