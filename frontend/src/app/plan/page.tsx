@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { Suspense, useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
@@ -491,6 +492,10 @@ export default function PlanPage() {
 
       {/* ── Itinerary Output ── */}
       <main className="min-h-[400px]">
+        <Suspense fallback={null}>
+          <CheckoutSuccessBanner />
+        </Suspense>
+
         {state === "idle" && (
           <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
             Fill in the brief and generate your itinerary.
@@ -506,9 +511,9 @@ export default function PlanPage() {
               </a>
             )}
             {quotaError?.tier === "free" && (
-              <p className="font-mono text-xs text-muted-foreground">
-                Free plan: 5/day. Contact us to upgrade to Premium for unlimited generations.
-              </p>
+              <a href="/pricing" className="font-mono text-xs underline">
+                Free plan: 5/day. Upgrade to Premium for unlimited generations →
+              </a>
             )}
             {!quotaError && lastSubmittedBriefRef.current && (
               <Button
@@ -700,6 +705,16 @@ export default function PlanPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function CheckoutSuccessBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("checkout") !== "success") return null;
+  return (
+    <p className="font-mono text-xs mb-3" style={{ color: "#1f7a45" }}>
+      ✓ You&apos;re now Premium — unlimited generations unlocked.
+    </p>
   );
 }
 

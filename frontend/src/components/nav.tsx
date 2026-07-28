@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { usePlan } from "@/hooks/use-plan";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { CurrencySelector } from "@/components/currency-selector";
 
 export function Nav() {
   const { user, loading, signOut } = useAuth();
+  const { plan } = usePlan();
   const router = useRouter();
 
   return (
@@ -28,6 +30,15 @@ export function Nav() {
                 <Link href="/trips" className="text-muted-foreground hover:text-foreground transition-colors">
                   My trips
                 </Link>
+                {plan?.plan === "premium" ? (
+                  <span className="font-mono text-xs" style={{ color: "var(--coral)" }}>
+                    Premium
+                  </span>
+                ) : (
+                  <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Upgrade
+                  </Link>
+                )}
                 <button
                   onClick={() => signOut().then(() => router.push("/")).catch(() => router.push("/"))}
                   className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
