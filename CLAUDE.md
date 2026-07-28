@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**TRAIVEL** — AI-powered travel planning web app. Monorepo: `frontend/` (Next.js 15, Vercel) + `backend/` (Python FastAPI, Railway).
+**TRAIVEL** — AI-powered travel planning web app. Monorepo: `frontend/` (Next.js 16, Vercel) + `backend/` (Python FastAPI, Railway).
 
 Detailed rules are split into `.claude/rules/`:
 

@@ -23,7 +23,7 @@ Browser
 
 ```
 C:\Project_Travel\
-├── frontend/    # Next.js 15 — deployed independently to Vercel
+├── frontend/    # Next.js 16 — deployed independently to Vercel
 └── backend/     # Python FastAPI — deployed independently to Railway
 ```
 

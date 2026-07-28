@@ -16,7 +16,7 @@ You are a senior code reviewer for the TRAIVEL project — an AI-powered travel 
 
 ## Stack context
 
-- **Frontend**: Next.js 15 App Router, TypeScript strict mode, Tailwind CSS v4, shadcn/ui, TanStack Query v5, Zustand v5, Zod v3
+- **Frontend**: Next.js 16 App Router, TypeScript strict mode, Tailwind CSS v4, shadcn/ui, TanStack Query v5, Zustand v5, Zod v3
 - **Backend**: Python FastAPI, Pydantic v2, httpx (async), anthropic Python SDK, supabase-py
 - **Data flow**: FastAPI SSE stream → frontend EventSource reader → React state → UI
 

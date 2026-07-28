@@ -75,8 +75,20 @@ export default function PlanPage() {
   // Form error state
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Ref to last submitted brief (for retry)
-  const lastSubmittedBriefRef = useRef<TripBrief | null>(null);
+  // Last submitted brief (for retry) — read during render to show the Retry
+  // button, so it must be state, not a ref (react-hooks/refs disallows
+  // reading ref.current during render).
+  const [lastSubmittedBrief, setLastSubmittedBrief] = useState<TripBrief | null>(null);
+
+  // Track the previous brief to clear the form error when the user edits the
+  // form again — set directly during render (React's documented pattern for
+  // "adjusting state when a prop/state changes") instead of a useEffect, so
+  // no extra setState-in-effect render/commit round-trip is needed.
+  const [prevBrief, setPrevBrief] = useState(brief);
+  if (brief !== prevBrief) {
+    setPrevBrief(brief);
+    setFormError(null);
+  }
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -89,20 +101,18 @@ export default function PlanPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Clear form error when user edits brief
-  useEffect(() => {
-    setFormError(null);
-  }, [brief]);
-
-  // Compute days from start + end date
-  useEffect(() => {
+  // Days derived from start + end date when both are set, falling back to
+  // brief.days (default 3) otherwise — computed directly instead of written
+  // back into brief via an effect (avoids a setState-in-effect round-trip).
+  const computedDays = useMemo(() => {
     if (brief.start_date && endDate && endDate >= brief.start_date) {
       const diff = Math.round(
         (new Date(endDate).getTime() - new Date(brief.start_date).getTime()) / 86400000
       ) + 1;
-      setBrief((p) => ({ ...p, days: Math.min(14, Math.max(1, diff)) }));
+      return Math.min(14, Math.max(1, diff));
     }
-  }, [brief.start_date, endDate]);
+    return brief.days;
+  }, [brief.start_date, endDate, brief.days]);
 
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) { setSuggestions([]); return; }
@@ -194,8 +204,7 @@ export default function PlanPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const budgetUsd = currency === "USD" ? budgetLocal : Math.round(budgetLocal / rate);
-    // If no end date set, default days to 3
-    const days = (brief.start_date && endDate) ? (brief.days ?? 3) : (brief.days ?? 3);
+    const days = computedDays ?? 3;
     const parsed = TripBriefSchema.safeParse({
       ...brief,
       days,
@@ -208,7 +217,7 @@ export default function PlanPage() {
       return;
     }
     setFormError(null);
-    lastSubmittedBriefRef.current = parsed.data;
+    setLastSubmittedBrief(parsed.data);
     setActiveDay(1);
     const token = await getAccessToken();
     generate(parsed.data, token);
@@ -293,9 +302,9 @@ export default function PlanPage() {
               />
             </Field>
           </div>
-          {brief.days != null && brief.start_date && endDate && (
+          {computedDays != null && brief.start_date && endDate && (
             <p className="font-mono text-[10px] text-muted-foreground -mt-2">
-              {brief.days} day{brief.days > 1 ? "s" : ""}
+              {computedDays} day{computedDays > 1 ? "s" : ""}
             </p>
           )}
 
@@ -515,13 +524,13 @@ export default function PlanPage() {
                 Free plan: 5/day. Upgrade to Premium for unlimited generations →
               </a>
             )}
-            {!quotaError && lastSubmittedBriefRef.current && (
+            {!quotaError && lastSubmittedBrief && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={async () => {
                   const token = await getAccessToken();
-                  generate(lastSubmittedBriefRef.current!, token);
+                  generate(lastSubmittedBrief, token);
                 }}
                 className="text-xs font-mono border-destructive/30 text-destructive hover:bg-destructive/10"
               >
@@ -565,7 +574,7 @@ export default function PlanPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-                {brief.destination} · {brief.days} day{(brief.days ?? 1) > 1 ? "s" : ""}
+                {brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}
               </p>
               {state === "streaming" && (
                 <span className="font-mono text-xs text-muted-foreground animate-pulse">
@@ -672,7 +681,7 @@ export default function PlanPage() {
 
             {/* Print-only: trip title + flight info */}
             <div className="print-only mb-4 space-y-1">
-              <p className="font-bold text-base">{brief.destination} · {brief.days} day{(brief.days ?? 1) > 1 ? "s" : ""}</p>
+              <p className="font-bold text-base">{brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}</p>
               {flightNotes && (
                 <p className="font-mono text-xs text-muted-foreground whitespace-pre-line">{flightNotes}</p>
               )}

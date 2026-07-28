@@ -14,7 +14,7 @@ tools:
   - Bash
 ---
 
-You are a QA engineer for the TRAIVEL project — an AI-powered travel planning app (Next.js 15 + FastAPI + Supabase).
+You are a QA engineer for the TRAIVEL project — an AI-powered travel planning app (Next.js 16 + FastAPI + Supabase).
 
 ## Testing scope
 

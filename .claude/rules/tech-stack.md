@@ -10,7 +10,7 @@ alwaysApply: false
 
 | Layer | Choice |
 |-------|--------|
-| Framework | Next.js 15 (App Router) + TypeScript |
+| Framework | Next.js 16 (App Router) + TypeScript |
 | Styling | Tailwind CSS v4 |
 | UI components | shadcn/ui — add via `npx shadcn@latest add [component]` |
 | Server state | TanStack Query v5 |
@@ -21,7 +21,7 @@ alwaysApply: false
 
 **package.json versions:**
 ```json
-"next": "^15", "react": "^19", "typescript": "^5",
+"next": "^16", "react": "^19", "typescript": "^5",
 "tailwindcss": "^4", "@tanstack/react-query": "^5",
 "zustand": "^5", "react-map-gl": "^8", "mapbox-gl": "^3",
 "@supabase/supabase-js": "^2", "@supabase/ssr": "^0", "zod": "^3"

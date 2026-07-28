@@ -49,8 +49,6 @@ export function useItineraryStream() {
         setElapsedSeconds((prev) => prev + 1);
       }, 1000);
       return () => clearInterval(interval);
-    } else {
-      setElapsedSeconds(0);
     }
   }, [state]);
 
@@ -180,6 +178,7 @@ export function useItineraryStream() {
     setShareSlug(null);
     setWeather(null);
     setTrends(null);
+    setElapsedSeconds(0);
   }, []);
 
   return { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };

@@ -25,7 +25,7 @@ Browser
   │
   ▼
 ┌─────────────────────────────────┐
-│  Next.js 15 — Vercel (free)     │
+│  Next.js 16 — Vercel (free)     │
 │                                 │
 │  /           Landing page       │
 │  /plan       Trip brief form    │
@@ -89,7 +89,7 @@ Save trip + itinerary + stops to Supabase
 ## Tech stack
 
 ### Frontend
-- **Next.js 15** (App Router) + TypeScript
+- **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS v4** — Version A design tokens: Sora + Newsreader italic + IBM Plex Mono, coral `#e85d3d`
 - **shadcn/ui** — button, badge, card, separator
 - **TanStack Query v5** — server state + SSE stream management
@@ -129,7 +129,7 @@ Save trip + itinerary + stops to Supabase
 
 ```
 traivel/
-├── frontend/               # Next.js 15 — deployed to Vercel
+├── frontend/               # Next.js 16 — deployed to Vercel
 │   └── src/
 │       ├── app/
 │       │   ├── page.tsx            # Landing page
