@@ -33,9 +33,19 @@ def create_checkout_session(user_id: str, email: str, price_id: str, customer_id
         params["customer"] = customer_id
     else:
         params["customer_email"] = email
-    session = stripe.checkout.Session.create(**params)
+    # Stripe discards idempotency keys after 24h, so a key scoped to
+    # (user, price) collapses double-click/two-tab duplicate submits into one
+    # session within that window without blocking a legitimate resubscribe
+    # later (the old key will have expired by then).
+    session = stripe.checkout.Session.create(
+        **params, idempotency_key=f"checkout:{user_id}:{price_id}"
+    )
     assert session.url is not None
     return session.url
+
+
+def get_subscription_status(subscription_id: str) -> str:
+    return stripe.Subscription.retrieve(subscription_id).status
 
 
 def create_portal_session(customer_id: str) -> str:

@@ -90,12 +90,16 @@ async def stripe_webhook(
 
     if event_type == "checkout.session.completed":
         user_id = data.get("client_reference_id")
+        subscription_id = data.get("subscription")
         if user_id:
+            # Read the real status instead of assuming "active" — matters once a
+            # trial period is ever added (would start as "trialing").
+            status = stripe_service.get_subscription_status(subscription_id) if subscription_id else "active"
             db.table("users").update({
                 "plan": "premium",
                 "stripe_customer_id": data.get("customer"),
-                "stripe_subscription_id": data.get("subscription"),
-                "subscription_status": "active",
+                "stripe_subscription_id": subscription_id,
+                "subscription_status": status,
             }).eq("id", user_id).execute()
 
     elif event_type in ("customer.subscription.updated", "customer.subscription.deleted"):

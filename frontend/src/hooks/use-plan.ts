@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-
-type PlanInfo = {
-  plan: "free" | "premium";
-  subscription_status: string | null;
-};
+import { PlanInfo, PlanInfoSchema } from "@/lib/schemas/billing";
 
 export function usePlan() {
   const { user, getAccessToken } = useAuth();
@@ -30,7 +26,8 @@ export function usePlan() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/me`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        setPlan(res.ok ? await res.json() : null);
+        const parsed = res.ok ? PlanInfoSchema.safeParse(await res.json()) : null;
+        setPlan(parsed?.success ? parsed.data : null);
       } catch {
         setPlan(null);
       } finally {

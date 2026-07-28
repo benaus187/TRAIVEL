@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePlan } from "@/hooks/use-plan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckoutResponseSchema } from "@/lib/schemas/billing";
 
 type Interval = "monthly" | "annual";
 
@@ -40,7 +41,12 @@ export default function PricingPage() {
         setError(typeof data.detail === "string" ? data.detail : "Could not start checkout — try again.");
         return;
       }
-      window.location.href = data.url;
+      const parsed = CheckoutResponseSchema.safeParse(data);
+      if (!parsed.success) {
+        setError("Could not start checkout — try again.");
+        return;
+      }
+      window.location.href = parsed.data.url;
     } finally {
       setBusy(false);
     }
@@ -60,7 +66,12 @@ export default function PricingPage() {
         setError(typeof data.detail === "string" ? data.detail : "Could not open billing portal — try again.");
         return;
       }
-      window.location.href = data.url;
+      const parsed = CheckoutResponseSchema.safeParse(data);
+      if (!parsed.success) {
+        setError("Could not open billing portal — try again.");
+        return;
+      }
+      window.location.href = parsed.data.url;
     } finally {
       setBusy(false);
     }
