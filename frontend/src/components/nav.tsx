@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlan } from "@/hooks/use-plan";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +12,7 @@ export function Nav() {
   const { user, loading, signOut } = useAuth();
   const { plan } = usePlan();
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <header className="w-full">
@@ -20,7 +21,7 @@ export function Nav() {
           <Wordmark />
         </Link>
         <nav className="flex items-center gap-4 text-sm">
-          <CurrencySelector />
+          {pathname === "/plan" && <CurrencySelector />}
           <Link href="/plan" className="text-muted-foreground hover:text-foreground transition-colors">
             Plan a trip
           </Link>
