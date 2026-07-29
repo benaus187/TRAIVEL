@@ -8,6 +8,9 @@ import { StopCard, TransitConnector } from "@/components/stop-card";
 import { Separator } from "@/components/ui/separator";
 import { StopSchema } from "@/lib/schemas/itinerary";
 import type { Stop } from "@/lib/schemas/itinerary";
+import { useAuth } from "@/hooks/use-auth";
+import { usePlan } from "@/hooks/use-plan";
+import { ChatPanel, ChatUpsell } from "@/components/chat-panel";
 import Link from "next/link";
 
 const MapView = dynamic(
@@ -18,38 +21,60 @@ const MapView = dynamic(
 type SharedItinerary = {
   id: string;
   share_slug: string;
-  trips: { destination: string; days: number } | null;
+  trips: { user_id: string | null; destination: string; days: number } | null;
   stops: Record<string, unknown>[];
 };
 
 export default function SharedTripPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { user, getAccessToken } = useAuth();
+  const { plan } = usePlan();
   const [data, setData] = useState<SharedItinerary | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [activeDay, setActiveDay] = useState(1);
+  const [stops, setStops] = useState<Stop[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from("itineraries")
-      .select("id, share_slug, trips(destination, days), stops(position, day, time, name, description, reason_codes, verified, weather_alternate, booking_url, lat, lon, transit_note)")
+      .select("id, trip_id, share_slug, stops(id, position, day, time, name, description, reason_codes, verified, weather_alternate, booking_url, lat, lon, transit_note)")
       .eq("share_slug", slug)
       .order("position", { referencedTable: "stops", ascending: true })
       .single()
-      .then(({ data, error }) => {
-        console.log("[share] data:", data, "error:", error);
-        if (error || !data) { setNotFound(true); return; }
-        setData(data as unknown as SharedItinerary);
+      .then(async ({ data: itinerary, error }) => {
+        if (error || !itinerary) { setNotFound(true); return; }
+        // Trip metadata (destination/days/user_id) is read from a dedicated
+        // view, not the `trips` table directly — RLS is row-level only, so a
+        // plain public-read policy on `trips` would leak every column
+        // (budget, interests, avoid, pace) for every shared trip. The view
+        // exposes only the 3 safe columns.
+        const { data: tripInfo } = await supabase
+          .from("shared_trip_info")
+          .select("user_id, destination, days")
+          .eq("id", itinerary.trip_id)
+          .single();
+        setData({ ...itinerary, trips: tripInfo ?? null } as unknown as SharedItinerary);
       });
   }, [slug]);
 
-  const stops: Stop[] = useMemo(() => {
-    if (!data?.stops) return [];
-    return data.stops.flatMap((s) => {
-      const parsed = StopSchema.safeParse(s);
-      return parsed.success ? [parsed.data] : [];
-    });
-  }, [data]);
+  // Seeded once from the fetched data (adjusted directly during render, same
+  // pattern used in plan/page.tsx — avoids a setState-in-effect round-trip)
+  // — after that, chat edits mutate this state directly, so it can't be a
+  // pure useMemo derived from `data`.
+  const [prevData, setPrevData] = useState<SharedItinerary | null>(null);
+  if (data !== prevData) {
+    setPrevData(data);
+    if (data?.stops) {
+      const parsedStops = data.stops.flatMap((s) => {
+        const parsed = StopSchema.safeParse(s);
+        return parsed.success ? [parsed.data] : [];
+      });
+      setStops(parsedStops);
+    }
+  }
+
+  const isOwner = !!user && data?.trips?.user_id === user.id;
 
   const totalDays = useMemo(() => {
     const days = stops.map((s) => s.day ?? 1);
@@ -138,6 +163,16 @@ export default function SharedTripPage() {
           );
         })}
       </div>
+
+      {isOwner && (
+        <div className="no-print pt-2">
+          {plan?.plan === "premium" ? (
+            <ChatPanel itineraryId={data.id} setStops={setStops} getAccessToken={getAccessToken} />
+          ) : (
+            <ChatUpsell />
+          )}
+        </div>
+      )}
 
       <div className="pt-4 text-center">
         <Link href="/plan" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">

@@ -7,6 +7,7 @@ from ..db import get_db
 
 FREE_SIGNED_IN_LIMIT = 5
 ANONYMOUS_LIMIT = 1
+CHAT_DAILY_LIMIT = 40
 
 
 class QuotaExceededError(BaseModel):
@@ -15,6 +16,14 @@ class QuotaExceededError(BaseModel):
     limit: int
     used: int
     reset_at: str  # ISO-8601 UTC, next midnight
+    message: str
+
+
+class ChatQuotaExceededError(BaseModel):
+    error: str = "chat_quota_exceeded"
+    limit: int
+    used: int
+    reset_at: str
     message: str
 
 
@@ -106,5 +115,35 @@ def check_and_reserve_quota(
         return QuotaExceededError(
             tier="anonymous", limit=ANONYMOUS_LIMIT, used=used,
             reset_at=_reset_at_iso(), message=_quota_message("anonymous"),
+        )
+    return None
+
+
+def _increment_chat(identity_key: str) -> int:
+    """Same fail-soft convention as `_increment` — a Supabase outage must not
+    block chat, it just means the daily cap is temporarily unenforced."""
+    try:
+        db = get_db()
+        today = date.today().isoformat()
+        result = db.rpc(
+            "increment_chat_usage",
+            {"p_identity_key": identity_key, "p_usage_date": today},
+        ).execute()
+        return int(result.data) if isinstance(result.data, (int, float)) else 0
+    except Exception:
+        return 0
+
+
+def check_and_reserve_chat_quota(user_id: str, email: str | None) -> ChatQuotaExceededError | None:
+    """Callers only reach this after confirming premium/manager tier — this is
+    pure cost-runaway protection on an already-paying user, not a monetization
+    lever, so a flat daily cap (no tiering) is enough."""
+    if email and email.lower() in _manager_emails():
+        return None
+    used = _increment_chat(f"user:{user_id}")
+    if used > CHAT_DAILY_LIMIT:
+        return ChatQuotaExceededError(
+            limit=CHAT_DAILY_LIMIT, used=used, reset_at=_reset_at_iso(),
+            message=f"You've used all {CHAT_DAILY_LIMIT} chat messages today. More tomorrow!",
         )
     return None
