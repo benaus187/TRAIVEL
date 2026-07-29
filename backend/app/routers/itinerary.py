@@ -2,7 +2,6 @@ import asyncio
 import json
 import secrets
 import string
-import urllib.parse
 from datetime import date, datetime, timezone, timedelta
 import anthropic
 from fastapi import APIRouter, Header, HTTPException, Request
@@ -11,7 +10,8 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..db import get_db
-from ..services.places import search_place, discover_popular_places
+from ..services.itinerary_ops import verify_stop
+from ..services.places import discover_popular_places
 from ..services.quota import check_and_reserve_quota
 from ..services.weather import get_trip_weather
 from ..services.youtube import fetch_youtube_trending
@@ -245,7 +245,7 @@ Include 4–6 activity stops per day. Be specific: use real place names, not gen
 For every stop description, always include an estimated cost at the end (e.g. "~25 {brief.currency}/person", "Free entry", "~120 {brief.currency} for the tour"). This helps the traveller budget their day."""
 
 
-def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None = None) -> tuple[str, str, str | None]:
+def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None = None) -> tuple[str, str, str | None, list[str]]:
     db = get_db()
 
     trip_row: dict = {
@@ -293,10 +293,13 @@ def _save_to_supabase(brief: TripBrief, stops: list[dict], user_id: str | None =
         }
         for i, s in enumerate(stops)
     ]
+    stop_ids: list[str] = []
     if rows:
-        db.table("stops").insert(rows).execute()
+        inserted = db.table("stops").insert(rows).execute()
+        pos_to_id = {r["position"]: r["id"] for r in inserted.data}
+        stop_ids = [pos_to_id.get(i, "") for i in range(len(stops))]
 
-    return trip_id, itinerary_id, share_slug
+    return trip_id, itinerary_id, share_slug, stop_ids
 
 
 @router.post("/generate")
@@ -345,7 +348,7 @@ async def generate_itinerary(
                         yield f"data: {json.dumps({'type': 'stop', 'stop': stop})}\n\n"
                         await asyncio.sleep(0.08)
 
-            trip_id, itinerary_id, share_slug = _save_to_supabase(brief, collected_stops, user_id)
+            trip_id, itinerary_id, share_slug, stop_ids = _save_to_supabase(brief, collected_stops, user_id)
 
             # 3. Verification phase — Google Places per stop + build booking URLs
             dest_lat: float | None = None
@@ -355,29 +358,10 @@ async def generate_itinerary(
                 db = get_db()
                 for i, stop in enumerate(collected_stops):
                     try:
-                        place = await search_place(stop["name"], brief.destination)
-                        maps_q = urllib.parse.quote_plus(f"{stop['name']}, {brief.destination}")
-                        booking_url = f"https://www.google.com/maps/search/?q={maps_q}"
-                        update: dict = {"booking_url": booking_url}
-                        verified = False
-                        place_id = None
-                        stop_lat: float | None = None
-                        stop_lon: float | None = None
-                        if place and place.get("place_id"):
-                            place_id = place["place_id"]
-                            verified = True
-                            stop_lat = place.get("lat")
-                            stop_lon = place.get("lon")
-                            update["place_id"] = place_id
-                            update["verified"] = True
-                            if stop_lat is not None:
-                                update["lat"] = stop_lat
-                            if stop_lon is not None:
-                                update["lon"] = stop_lon
-                            if dest_lat is None and stop_lat and stop_lon:
-                                dest_lat, dest_lon = stop_lat, stop_lon
-                        db.table("stops").update(update).eq("itinerary_id", itinerary_id).eq("position", i).execute()
-                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'verified': verified, 'place_id': place_id, 'booking_url': booking_url, 'lat': stop_lat, 'lon': stop_lon})}\n\n"
+                        result = await verify_stop(db, stop_ids[i], stop["name"], brief.destination)
+                        if dest_lat is None and result["lat"] and result["lon"]:
+                            dest_lat, dest_lon = result["lat"], result["lon"]
+                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'id': stop_ids[i], **result})}\n\n"
                     except Exception:
                         pass
                     await asyncio.sleep(0.5)

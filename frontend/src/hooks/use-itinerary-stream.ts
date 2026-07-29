@@ -37,6 +37,7 @@ export function useItineraryStream() {
   const [error, setError] = useState<string | null>(null);
   const [quotaError, setQuotaError] = useState<QuotaExceededError | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
+  const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
   const [trends, setTrends] = useState<TrendItem[] | null>(null);
@@ -61,6 +62,7 @@ export function useItineraryStream() {
     setError(null);
     setQuotaError(null);
     setTripId(null);
+    setItineraryId(null);
     setShareSlug(null);
     setWeather(null);
     setTrends(null);
@@ -137,6 +139,7 @@ export function useItineraryStream() {
                 i === idx
                   ? {
                       ...s,
+                      id: (event.id as string | undefined) ?? s.id,
                       verified: event.verified as boolean,
                       place_id: event.place_id as string | null,
                       booking_url: event.booking_url as string | null,
@@ -152,6 +155,7 @@ export function useItineraryStream() {
             setWeather(event.forecasts as WeatherDay[]);
           } else if (event.type === "done") {
             if (event.trip_id) setTripId(event.trip_id as string);
+            if (event.itinerary_id) setItineraryId(event.itinerary_id as string);
             if (event.share_slug) setShareSlug(event.share_slug as string);
             setState("done");
           } else if (event.type === "error") {
@@ -175,11 +179,12 @@ export function useItineraryStream() {
     setError(null);
     setQuotaError(null);
     setTripId(null);
+    setItineraryId(null);
     setShareSlug(null);
     setWeather(null);
     setTrends(null);
     setElapsedSeconds(0);
   }, []);
 
-  return { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };
+  return { stops, setStops, state, error, quotaError, tripId, itineraryId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort };
 }

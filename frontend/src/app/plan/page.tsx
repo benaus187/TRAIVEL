@@ -7,9 +7,11 @@ import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { useCurrencyStore } from "@/stores/currency-store";
 import { useAuth } from "@/hooks/use-auth";
+import { usePlan } from "@/hooks/use-plan";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import { StopCard, TransitConnector } from "@/components/stop-card";
 import { TrendPanel } from "@/components/trend-panel";
+import { ChatPanel, ChatUpsell } from "@/components/chat-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -52,8 +54,9 @@ const INITIAL_BRIEF: Partial<TripBrief> = {
 };
 
 export default function PlanPage() {
-  const { stops, state, error, quotaError, tripId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
+  const { stops, setStops, state, error, quotaError, tripId, itineraryId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
+  const { plan } = usePlan();
   const { currency, symbol, rate } = useCurrencyStore();
   const [brief, setBrief] = useState<Partial<TripBrief>>(INITIAL_BRIEF);
   const [budgetLocal, setBudgetLocal] = useState(0);
@@ -752,6 +755,17 @@ export default function PlanPage() {
                 </div>
               );
             })}
+
+            {/* Chat editing — only once the itinerary is fully generated and saved */}
+            {state === "done" && itineraryId && (
+              <div className="no-print pt-2">
+                {plan?.plan === "premium" ? (
+                  <ChatPanel itineraryId={itineraryId} setStops={setStops} getAccessToken={getAccessToken} />
+                ) : (
+                  <ChatUpsell />
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>
