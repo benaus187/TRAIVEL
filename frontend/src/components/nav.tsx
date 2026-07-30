@@ -32,9 +32,9 @@ export function Nav() {
                   My trips
                 </Link>
                 {plan?.plan === "premium" ? (
-                  <span className="font-mono text-xs" style={{ color: "var(--coral)" }}>
+                  <Link href="/pricing" className="font-mono text-xs" style={{ color: "var(--coral)" }}>
                     Premium
-                  </span>
+                  </Link>
                 ) : (
                   <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
                     Upgrade
