@@ -1,3 +1,5 @@
+import hashlib
+import json
 from typing import Any
 
 import stripe
@@ -33,13 +35,18 @@ def create_checkout_session(user_id: str, email: str, price_id: str, customer_id
         params["customer"] = customer_id
     else:
         params["customer_email"] = email
-    # Stripe discards idempotency keys after 24h, so a key scoped to
-    # (user, price) collapses double-click/two-tab duplicate submits into one
-    # session within that window without blocking a legitimate resubscribe
-    # later (the old key will have expired by then).
-    session = stripe.checkout.Session.create(
-        **params, idempotency_key=f"checkout:{user_id}:{price_id}"
-    )
+    # Stripe rejects reusing a key with different params (IdempotencyError),
+    # so the key must be derived from the actual request body — a key scoped
+    # only to (user, price) collided in production the first time frontend_url
+    # changed (redirect URLs are part of `params`), because within the same
+    # 24h window Stripe still had the old params cached under that key.
+    # Hashing the full params collapses true double-click/two-tab duplicate
+    # submits (identical params → identical hash) while still minting a fresh
+    # key whenever anything about the request legitimately changes.
+    idempotency_key = "checkout:" + hashlib.sha256(
+        json.dumps(params, sort_keys=True).encode()
+    ).hexdigest()
+    session = stripe.checkout.Session.create(**params, idempotency_key=idempotency_key)
     assert session.url is not None
     return session.url
 
