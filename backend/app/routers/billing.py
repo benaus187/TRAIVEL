@@ -117,4 +117,27 @@ async def stripe_webhook(
         if not result.data:
             raise HTTPException(status_code=500, detail=f"no user found for stripe_customer_id={customer_id}")
 
+    elif event_type == "invoice.payment_failed":
+        # Fires immediately on a failed renewal charge, ahead of the
+        # customer.subscription.updated event that eventually follows once
+        # Stripe's retry schedule lands on past_due/unpaid — read the real
+        # status now so subscription_status isn't stale in the meantime.
+        # plan itself is left alone here; customer.subscription.updated above
+        # already owns the plan flip once Stripe's retries are exhausted.
+        customer_id = data.get("customer")
+        subscription_id = data.get("subscription")
+        if customer_id and subscription_id:
+            status = stripe_service.get_subscription_status(subscription_id)
+            result = db.table("users").update({
+                "subscription_status": status,
+            }).eq("stripe_customer_id", customer_id).execute()
+            if not result.data:
+                raise HTTPException(status_code=500, detail=f"no user found for stripe_customer_id={customer_id}")
+
+    elif event_type == "customer.subscription.trial_will_end":
+        # No trial period or email service configured yet (see tech-stack.md) —
+        # just ack so Stripe doesn't retry. Hook a reminder notification here
+        # once an email service is added.
+        pass
+
     return {"received": True}
