@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import billing, chat, itinerary, places, weather, trends
+from .routers import billing, chat, itinerary, weather
 
 app = FastAPI(title="TRAIVEL API", version="0.1.0")
 
@@ -17,9 +17,7 @@ app.add_middleware(
 app.include_router(itinerary.router)
 app.include_router(chat.router)
 app.include_router(billing.router)
-app.include_router(places.router)
 app.include_router(weather.router)
-app.include_router(trends.router)
 
 
 @app.get("/health")
