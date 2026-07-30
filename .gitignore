@@ -30,3 +30,9 @@ Folder_structure.png
 
 # Design exploration (not app logic — kept locally only)
 design/
+
+# Local tooling scaffolding — not part of the app, kept locally only
+.agents/
+.claude/skills/
+.vscode/
+skills-lock.json
