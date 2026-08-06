@@ -32,7 +32,7 @@ export function Nav() {
                   My trips
                 </Link>
                 {plan?.plan === "premium" ? (
-                  <Link href="/pricing" className="font-mono text-xs" style={{ color: "var(--coral)" }}>
+                  <Link href="/pricing" className="font-mono text-xs text-vermilion">
                     Premium
                   </Link>
                 ) : (
@@ -66,7 +66,7 @@ function Wordmark() {
   return (
     <span className="font-semibold text-lg tracking-tight select-none">
       TR
-      <span className="font-black pb-[1px]" style={{ color: "var(--coral)", borderBottom: "2px solid var(--coral)" }}>
+      <span className="font-black pb-[1px] text-vermilion border-b-2 border-vermilion">
         AI
       </span>
       VEL

@@ -7,7 +7,18 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-coral: var(--coral);
+  --color-coral: var(--vermilion);
+  --color-vermilion: var(--vermilion);
+  --color-vermilion-ink: var(--vermilion-ink);
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-stamp: var(--stamp);
+  --color-gold: var(--gold);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-board-bg: var(--board-bg);
+  --color-board-fg: var(--board-fg);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
@@ -51,74 +62,107 @@
 }
 
 :root {
-  /* Version A — Trendy Editorial palette */
-  --background: oklch(0.978 0.006 80);      /* #faf7f2 warm white */
-  --foreground: oklch(0.145 0 0);           /* #1a1a1a near-black */
-  --card: oklch(0.992 0.004 80);            /* slightly warmer white */
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(0.992 0.004 80);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.59 0.19 35);           /* #e85d3d coral */
-  --primary-foreground: oklch(0.99 0 0);    /* white text on coral */
-  --secondary: oklch(0.96 0.006 80);        /* warm light gray */
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0.006 80);
-  --muted-foreground: oklch(0.50 0.010 80); /* warm medium gray */
-  --accent: oklch(0.96 0.006 80);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Boarding Pass — duotone ink palette */
+  --paper: #FAF6EF;
+  --paper-card: #FFFDF9;
+  --paper-recess: #EDE6D8;
+  --ink: #211A10;
+  --ink-soft: #746347;
+  --vermilion: #e85d3d;
+  --vermilion-ink: #c2451f;
+  --navy: #21324A;
+  --navy-soft: #4C6484;
+  --stamp: #2E6B41;
+  --gold: #A9761F;
+  --board-bg: #21324A;
+  --board-fg: #FBF6E9;
+  --line: rgba(33, 26, 16, 0.24);
+  --line-strong: rgba(33, 26, 16, 0.4);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-card);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-card);
+  --popover-foreground: var(--ink);
+  --primary: var(--vermilion);
+  --primary-foreground: oklch(0.99 0 0);    /* white text on vermilion */
+  --secondary: var(--paper-recess);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-recess);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--paper-recess);
+  --accent-foreground: var(--ink);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.006 80);           /* warm light border */
-  --input: oklch(0.91 0.006 80);
-  --ring: oklch(0.59 0.19 35);              /* coral ring */
-  --coral: #e85d3d;
-  --chart-1: oklch(0.59 0.19 35);
+  --border: var(--paper-recess);
+  --input: var(--paper-recess);
+  --ring: var(--vermilion);
+  --coral: var(--vermilion);
+  --chart-1: var(--vermilion);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.5rem;
-  --sidebar: oklch(0.978 0.006 80);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.59 0.19 35);
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--vermilion);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.006 80);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.91 0.006 80);
-  --sidebar-ring: oklch(0.59 0.19 35);
+  --sidebar-accent: var(--paper-recess);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--paper-recess);
+  --sidebar-ring: var(--vermilion);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --paper: #14100A;
+  --paper-card: #1C160D;
+  --paper-recess: #241C10;
+  --ink: #F2E9D3;
+  --ink-soft: #B7A587;
+  --vermilion: #FF7A45;
+  --vermilion-ink: #FFB08A;
+  --navy: #7FB0FF;
+  --navy-soft: #4C7DC2;
+  --stamp: #63E28A;
+  --gold: #F3C15C;
+  --board-bg: #241C10;
+  --board-fg: #F2E9D3;
+  --line: rgba(242, 233, 211, 0.2);
+  --line-strong: rgba(242, 233, 211, 0.34);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-card);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-card);
+  --popover-foreground: var(--ink);
+  --primary: var(--vermilion);
+  --primary-foreground: oklch(0.145 0 0);   /* dark text on bright vermilion */
+  --secondary: var(--paper-recess);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-recess);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--paper-recess);
+  --accent-foreground: var(--ink);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
+  --border: var(--paper-recess);
+  --input: var(--paper-recess);
+  --ring: var(--vermilion);
+  --coral: var(--vermilion);
+  --chart-1: var(--vermilion);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--vermilion);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: var(--paper-recess);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--paper-recess);
+  --sidebar-ring: var(--vermilion);
 }
 
 @keyframes fadeInUp {

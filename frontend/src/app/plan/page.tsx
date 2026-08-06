@@ -592,10 +592,7 @@ export default function PlanPage() {
               {`Discovering places in ${brief.destination ?? "your destination"}…`}
             </p>
             <div className="h-1 w-full bg-border rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full progress-indeterminate"
-                style={{ backgroundColor: "var(--coral)" }}
-              />
+              <div className="h-full rounded-full progress-indeterminate bg-vermilion" />
             </div>
             {elapsedSeconds >= 20 && (
               <div className="flex items-center gap-3">
@@ -638,7 +635,7 @@ export default function PlanPage() {
               )}
               {state === "done" && tripId && (
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-[#1f7a45]">✓ saved</span>
+                  <span className="font-mono text-xs text-stamp">✓ saved</span>
                   {shareSlug ? (
                     <button
                       onClick={() => navigator.clipboard.writeText(`${window.location.origin}/trips/${shareSlug}`)}
@@ -666,15 +663,11 @@ export default function PlanPage() {
               <div className="space-y-2">
                 <div className="h-1 w-full bg-border rounded-full overflow-hidden">
                   {state === "streaming" ? (
-                    <div
-                      className="h-full rounded-full progress-indeterminate"
-                      style={{ backgroundColor: "var(--coral)" }}
-                    />
+                    <div className="h-full rounded-full progress-indeterminate bg-vermilion" />
                   ) : (
                     <div
-                      className="h-full rounded-full transition-all duration-500 ease-out"
+                      className="h-full rounded-full transition-all duration-500 ease-out bg-vermilion"
                       style={{
-                        backgroundColor: "var(--coral)",
                         width: `${Math.max(45, 45 + (stops.filter((s) => s.verified).length / Math.max(stops.length, 1)) * 52)}%`,
                       }}
                     />
@@ -777,7 +770,7 @@ function CheckoutSuccessBanner() {
   const searchParams = useSearchParams();
   if (searchParams.get("checkout") !== "success") return null;
   return (
-    <p className="font-mono text-xs mb-3" style={{ color: "#1f7a45" }}>
+    <p className="font-mono text-xs mb-3 text-stamp">
       ✓ You&apos;re now Premium — unlimited generations unlocked.
     </p>
   );

@@ -72,9 +72,8 @@ export function ChatPanel({
             <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[85%] rounded-md px-3 py-1.5 text-sm ${
-                  m.role === "user" ? "text-background" : "bg-muted text-foreground"
+                  m.role === "user" ? "bg-vermilion text-background" : "bg-muted text-foreground"
                 }`}
-                style={m.role === "user" ? { backgroundColor: "var(--coral)" } : undefined}
               >
                 {m.content}
               </div>

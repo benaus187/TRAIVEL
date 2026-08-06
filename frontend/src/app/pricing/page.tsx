@@ -128,7 +128,7 @@ export default function PricingPage() {
           </CardContent>
         </Card>
 
-        <Card className="ring-1" style={{ boxShadow: "0 0 0 1px var(--coral)" }}>
+        <Card className="ring-1 ring-vermilion">
           <CardHeader>
             <CardTitle>Premium</CardTitle>
           </CardHeader>

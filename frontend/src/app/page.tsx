@@ -79,10 +79,7 @@ function HowItWorks() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {steps.map((s) => (
           <div key={s.n} className="space-y-3">
-            <span
-              className="font-mono text-3xl font-bold"
-              style={{ color: "var(--coral)" }}
-            >
+            <span className="font-mono text-3xl font-bold text-vermilion">
               {s.n}
             </span>
             <h3 className="font-semibold text-base leading-snug">{s.title}</h3>
