@@ -28,7 +28,8 @@ async def _get_cached_youtube_trends(destination: str) -> list[dict]:
 
     try:
         db = get_db()
-        cached = db.table("trend_cache").select("data,cached_at").eq("destination", cache_key).execute()
+        query = db.table("trend_cache").select("data,cached_at").eq("destination", cache_key)
+        cached = await asyncio.to_thread(query.execute)
         if cached.data:
             cached_at = datetime.fromisoformat(cached.data[0]["cached_at"].replace("Z", "+00:00"))
             age_hours = (datetime.now(timezone.utc) - cached_at).total_seconds() / 3600
@@ -42,18 +43,19 @@ async def _get_cached_youtube_trends(destination: str) -> list[dict]:
     if trends:
         try:
             db = get_db()
-            db.table("trend_cache").upsert({
+            query = db.table("trend_cache").upsert({
                 "destination": cache_key,
                 "data": trends,
                 "cached_at": datetime.now(timezone.utc).isoformat(),
-            }).execute()
+            })
+            await asyncio.to_thread(query.execute)
         except Exception:
             pass
 
     return trends
 
 
-def _extract_claims(authorization: str | None) -> tuple[str | None, str | None]:
+async def _extract_claims(authorization: str | None) -> tuple[str | None, str | None]:
     """Returns (user_id, email) for a Supabase-verified JWT, or (None, None) if
     missing/invalid/expired. Verification is a real call to Supabase Auth
     (auth.get_user) rather than a local decode — quota tier (including the
@@ -62,7 +64,7 @@ def _extract_claims(authorization: str | None) -> tuple[str | None, str | None]:
     if not authorization or not authorization.startswith("Bearer "):
         return None, None
     try:
-        response = get_db().auth.get_user(authorization[7:])
+        response = await asyncio.to_thread(get_db().auth.get_user, authorization[7:])
         user = response.user
         return user.id, user.email
     except Exception:
@@ -309,9 +311,9 @@ async def generate_itinerary(
     authorization: str | None = Header(default=None),
     x_anon_id: str | None = Header(default=None, alias="X-Anon-Id"),
 ) -> StreamingResponse:
-    user_id, email = _extract_claims(authorization)
+    user_id, email = await _extract_claims(authorization)
 
-    quota_error = check_and_reserve_quota(user_id, email, request, x_anon_id)
+    quota_error = await check_and_reserve_quota(user_id, email, request, x_anon_id)
     if quota_error is not None:
         raise HTTPException(status_code=429, detail=quota_error.model_dump())
 
@@ -332,7 +334,8 @@ async def generate_itinerary(
                 yield f"data: {json.dumps({'type': 'trends', 'trends': combined_trends})}\n\n"
 
             # 2. Generate itinerary with Claude — prompt includes places + youtube + weather
-            message = client.messages.create(
+            message = await asyncio.to_thread(
+                client.messages.create,
                 model="claude-opus-5",
                 max_tokens=8192,
                 tools=[ITINERARY_TOOL],
@@ -348,7 +351,9 @@ async def generate_itinerary(
                         yield f"data: {json.dumps({'type': 'stop', 'stop': stop})}\n\n"
                         await asyncio.sleep(0.08)
 
-            trip_id, itinerary_id, share_slug, stop_ids = _save_to_supabase(brief, collected_stops, user_id)
+            trip_id, itinerary_id, share_slug, stop_ids = await asyncio.to_thread(
+                _save_to_supabase, brief, collected_stops, user_id
+            )
 
             # 3. Verification phase — Google Places per stop + build booking URLs
             dest_lat: float | None = None

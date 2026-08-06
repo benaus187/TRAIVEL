@@ -1,3 +1,5 @@
+import asyncio
+
 import anthropic
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
@@ -96,7 +98,7 @@ async def chat_with_itinerary(
     body: ChatMessageRequest,
     authorization: str | None = Header(default=None),
 ) -> dict:
-    user_id, email = _extract_claims(authorization)
+    user_id, email = await _extract_claims(authorization)
     if not user_id:
         raise HTTPException(status_code=401, detail="sign in required")
 
@@ -113,7 +115,7 @@ async def chat_with_itinerary(
     if not trip or trip["user_id"] != user_id:
         raise HTTPException(status_code=403, detail="not your itinerary")
 
-    tier = _resolve_tier(user_id, email)
+    tier = await _resolve_tier(user_id, email)
     if tier not in ("premium", "manager"):
         raise HTTPException(
             status_code=403,
@@ -143,7 +145,8 @@ async def chat_with_itinerary(
 
     try:
         client = get_client()
-        message = client.messages.create(
+        message = await asyncio.to_thread(
+            client.messages.create,
             model="claude-opus-5",
             max_tokens=4096,
             tools=[UPDATE_ITINERARY_TOOL],

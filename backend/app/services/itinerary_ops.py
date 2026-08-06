@@ -1,3 +1,4 @@
+import asyncio
 import urllib.parse
 
 from .places import search_place
@@ -32,7 +33,8 @@ async def verify_stop(db, stop_id: str, name: str, destination: str) -> dict:
         if lon is not None:
             update["lon"] = lon
 
-    db.table("stops").update(update).eq("id", stop_id).execute()
+    query = db.table("stops").update(update).eq("id", stop_id)
+    await asyncio.to_thread(query.execute)
     return {"verified": verified, "place_id": place_id, "booking_url": booking_url, "lat": lat, "lon": lon}
 
 

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, datetime, timezone, timedelta
 from fastapi import Request
 from pydantic import BaseModel
@@ -41,7 +42,7 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _increment(identity_key: str) -> int:
+async def _increment(identity_key: str) -> int:
     """Atomically reserve a slot for identity_key/today and return the new count.
     Fails soft (returns 0 = "not over limit") on DB errors — a Supabase outage
     must not block itinerary generation, it just means quota is temporarily
@@ -49,16 +50,17 @@ def _increment(identity_key: str) -> int:
     try:
         db = get_db()
         today = date.today().isoformat()
-        result = db.rpc(
+        query = db.rpc(
             "increment_generation_usage",
             {"p_identity_key": identity_key, "p_usage_date": today},
-        ).execute()
+        )
+        result = await asyncio.to_thread(query.execute)
         return int(result.data) if isinstance(result.data, (int, float)) else 0
     except Exception:
         return 0
 
 
-def _resolve_tier(user_id: str | None, email: str | None) -> str:
+async def _resolve_tier(user_id: str | None, email: str | None) -> str:
     """Returns 'manager' | 'premium' | 'free' | 'anonymous'."""
     if email and email.lower() in _manager_emails():
         return "manager"
@@ -66,7 +68,8 @@ def _resolve_tier(user_id: str | None, email: str | None) -> str:
         return "anonymous"
     try:
         db = get_db()
-        row = db.table("users").select("plan").eq("id", user_id).limit(1).execute()
+        query = db.table("users").select("plan").eq("id", user_id).limit(1)
+        row = await asyncio.to_thread(query.execute)
         if row.data and row.data[0].get("plan") == "premium":
             return "premium"
     except Exception:
@@ -85,7 +88,7 @@ def _quota_message(tier: str) -> str:
     return "You've used all 5 free generations today. Upgrade to Premium for unlimited generations."
 
 
-def check_and_reserve_quota(
+async def check_and_reserve_quota(
     user_id: str | None,
     email: str | None,
     request: Request,
@@ -93,13 +96,13 @@ def check_and_reserve_quota(
 ) -> QuotaExceededError | None:
     """Returns None if the request is allowed (and reserves the slot as a side
     effect for free/anonymous tiers). Returns a QuotaExceededError if blocked."""
-    tier = _resolve_tier(user_id, email)
+    tier = await _resolve_tier(user_id, email)
 
     if tier in ("manager", "premium"):
         return None
 
     if tier == "free":
-        used = _increment(f"user:{user_id}")
+        used = await _increment(f"user:{user_id}")
         if used > FREE_SIGNED_IN_LIMIT:
             return QuotaExceededError(
                 tier="free", limit=FREE_SIGNED_IN_LIMIT, used=used,
@@ -108,8 +111,8 @@ def check_and_reserve_quota(
         return None
 
     # anonymous — check/reserve both signals independently
-    ip_used = _increment(f"ip:{_client_ip(request)}")
-    anon_used = _increment(f"anon:{anon_id}") if anon_id else 0
+    ip_used = await _increment(f"ip:{_client_ip(request)}")
+    anon_used = await _increment(f"anon:{anon_id}") if anon_id else 0
     used = max(ip_used, anon_used)
     if ip_used > ANONYMOUS_LIMIT or anon_used > ANONYMOUS_LIMIT:
         return QuotaExceededError(

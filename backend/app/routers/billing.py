@@ -18,7 +18,7 @@ class CheckoutRequest(BaseModel):
 
 @router.get("/me")
 async def get_my_plan(authorization: str | None = Header(default=None)) -> dict:
-    user_id, _ = _extract_claims(authorization)
+    user_id, _ = await _extract_claims(authorization)
     if not user_id:
         raise HTTPException(status_code=401, detail="sign in required")
     row = get_db().table("users").select("plan,subscription_status").eq("id", user_id).limit(1).execute()
@@ -29,7 +29,7 @@ async def get_my_plan(authorization: str | None = Header(default=None)) -> dict:
 
 @router.post("/checkout")
 async def create_checkout(body: CheckoutRequest, authorization: str | None = Header(default=None)) -> dict:
-    user_id, email = _extract_claims(authorization)
+    user_id, email = await _extract_claims(authorization)
     if not user_id or not email:
         raise HTTPException(status_code=401, detail="sign in required")
     row = get_db().table("users").select("plan,subscription_status,stripe_customer_id").eq("id", user_id).limit(1).execute()
@@ -55,7 +55,7 @@ async def create_checkout(body: CheckoutRequest, authorization: str | None = Hea
 
 @router.post("/portal")
 async def create_portal(authorization: str | None = Header(default=None)) -> dict:
-    user_id, _ = _extract_claims(authorization)
+    user_id, _ = await _extract_claims(authorization)
     if not user_id:
         raise HTTPException(status_code=401, detail="sign in required")
     row = get_db().table("users").select("stripe_customer_id").eq("id", user_id).limit(1).execute()
