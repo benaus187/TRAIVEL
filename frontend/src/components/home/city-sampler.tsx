@@ -68,7 +68,7 @@ export function CitySampler() {
       </div>
 
       <div className="mt-7 max-w-sm mx-auto text-left" key={activeId}>
-        <MiniStop stop={active.stop} animate delaySeconds={0} />
+        <MiniStop stop={active.stop} enterDelayMs={0} />
       </div>
 
       <div className="pt-7">

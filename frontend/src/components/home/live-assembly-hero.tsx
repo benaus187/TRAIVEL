@@ -11,40 +11,21 @@ const STOPS: SampleStop[] = [
   { time: "12:00", name: "Train Street, Hẻm 224", codes: ["social momentum", "transport fit"], verified: true },
 ];
 
-// Total choreographed animation time (last delay + its duration) plus slack.
-// Past this point we force the final visible state via React state instead of
-// CSS animation-delay/forwards — a backgrounded tab, reduced-motion edge case,
-// or anything else that stalls the CSS animation should never leave the
-// content permanently invisible.
-const SETTLE_MS = 2600;
-
 export function LiveAssemblyHero() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [playKey, setPlayKey] = useState(0);
-  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     const el = sectionRef.current;
-    if (!el || !("IntersectionObserver" in window)) {
-      setSettled(true);
-      return;
-    }
+    if (!el || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setPlayKey((k) => k + 1);
-        setSettled(false);
-        if (settleTimer.current) clearTimeout(settleTimer.current);
-        settleTimer.current = setTimeout(() => setSettled(true), SETTLE_MS);
+        if (entry.isIntersecting) setPlayKey((k) => k + 1);
       },
       { threshold: 0.35 }
     );
     io.observe(el);
-    return () => {
-      io.disconnect();
-      if (settleTimer.current) clearTimeout(settleTimer.current);
-    };
+    return () => io.disconnect();
   }, []);
 
   return (
@@ -79,13 +60,7 @@ export function LiveAssemblyHero() {
         </div>
         <div className="flex flex-col gap-3" key={playKey}>
           {STOPS.map((stop, i) => (
-            <MiniStop
-              key={stop.time}
-              stop={stop}
-              animate={!settled}
-              delaySeconds={0.1 + i * 0.75}
-              stampDelaySeconds={2.05}
-            />
+            <MiniStop key={stop.time} stop={stop} enterDelayMs={100 + i * 750} />
           ))}
         </div>
       </div>

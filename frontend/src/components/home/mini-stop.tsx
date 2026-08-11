@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import type { ReasonCode } from "@/lib/schemas/itinerary";
 import { cn } from "@/lib/utils";
@@ -12,26 +15,29 @@ export type SampleStop = {
 export function MiniStop({
   stop,
   className,
-  animate,
-  delaySeconds,
-  stampDelaySeconds,
+  enterDelayMs,
 }: {
   stop: SampleStop;
   className?: string;
-  /** Play the assemble-in animation (motion-safe only, no-op otherwise). */
-  animate?: boolean;
-  delaySeconds?: number;
-  stampDelaySeconds?: number;
+  /** If set, the card mounts hidden and transitions to visible after this delay — used to stagger a sequence. Omit for an already-visible card. */
+  enterDelayMs?: number;
 }) {
+  const [revealed, setRevealed] = useState(enterDelayMs == null);
+
+  useEffect(() => {
+    if (enterDelayMs == null) return;
+    const timer = setTimeout(() => setRevealed(true), enterDelayMs);
+    return () => clearTimeout(timer);
+  }, [enterDelayMs]);
+
   return (
     <div
       className={cn(
         "grid grid-cols-[64px_1fr] bg-card border border-line-strong shadow-lg overflow-hidden",
-        animate &&
-          "motion-safe:opacity-0 motion-safe:translate-y-2.5 motion-safe:[animation:assemble-row_0.55s_ease-out_forwards]",
+        "transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none",
+        revealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2.5",
         className
       )}
-      style={animate && delaySeconds != null ? { animationDelay: `${delaySeconds}s` } : undefined}
     >
       <div className="flex flex-col items-center justify-center gap-0.5 bg-navy text-background px-1.5 py-2.5">
         <span className="font-mono font-bold text-base tabular-nums">{stop.time}</span>
@@ -44,11 +50,9 @@ export function MiniStop({
             <span
               className={cn(
                 "shrink-0 inline-flex items-center gap-1 font-mono text-[10px] font-semibold text-stamp",
-                animate
-                  ? "motion-safe:opacity-0 motion-safe:scale-[0.6] motion-safe:-rotate-[14deg] motion-safe:[animation:stamp-pop_0.5s_cubic-bezier(.2,1.6,.4,1)_forwards]"
-                  : "opacity-100"
+                "transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
+                revealed ? "opacity-100 scale-100 -rotate-[11deg]" : "opacity-0 scale-[0.6] -rotate-[14deg]"
               )}
-              style={animate && stampDelaySeconds != null ? { animationDelay: `${stampDelaySeconds}s` } : undefined}
             >
               ✓ verified
             </span>
