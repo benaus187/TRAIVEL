@@ -12,6 +12,10 @@ export type SampleStop = {
   verified?: boolean;
 };
 
+// The verified stamp lands as its own beat after the card has already
+// slid into place, not simultaneously with it.
+const STAMP_EXTRA_DELAY_MS = 450;
+
 export function MiniStop({
   stop,
   className,
@@ -23,12 +27,19 @@ export function MiniStop({
   enterDelayMs?: number;
 }) {
   const [revealed, setRevealed] = useState(enterDelayMs == null);
+  const [stampRevealed, setStampRevealed] = useState(enterDelayMs == null);
 
   useEffect(() => {
     if (enterDelayMs == null) return;
     const timer = setTimeout(() => setRevealed(true), enterDelayMs);
     return () => clearTimeout(timer);
   }, [enterDelayMs]);
+
+  useEffect(() => {
+    if (enterDelayMs == null || !stop.verified) return;
+    const timer = setTimeout(() => setStampRevealed(true), enterDelayMs + STAMP_EXTRA_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [enterDelayMs, stop.verified]);
 
   return (
     <div
@@ -51,7 +62,7 @@ export function MiniStop({
               className={cn(
                 "shrink-0 inline-flex items-center gap-1 font-mono text-[10px] font-semibold text-stamp",
                 "transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
-                revealed ? "opacity-100 scale-100 -rotate-[11deg]" : "opacity-0 scale-[0.6] -rotate-[14deg]"
+                stampRevealed ? "opacity-100 scale-100 -rotate-[11deg]" : "opacity-0 scale-[0.6] -rotate-[14deg]"
               )}
             >
               ✓ verified
