@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Sora, Newsreader } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
 
 const sora = Sora({
   variable: "--font-sans",
@@ -47,7 +46,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Nav />
         <main className="flex-1">{children}</main>
-        <Footer />
       </body>
     </html>
   );

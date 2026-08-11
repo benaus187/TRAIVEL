@@ -4,16 +4,20 @@ import { LiveAssemblyHero } from "@/components/home/live-assembly-hero";
 import { WhyTraivelBento } from "@/components/home/why-traivel-bento";
 import { CitySampler } from "@/components/home/city-sampler";
 import { TrustLine } from "@/components/home/trust-line";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
-    <div className="max-w-3xl mx-auto px-6">
-      <LiveAssemblyHero />
-      <WhyTraivelBento />
-      <CitySampler />
-      <TrustLine />
-      <BottomCTA />
-    </div>
+    <>
+      <div className="max-w-3xl mx-auto px-6">
+        <LiveAssemblyHero />
+        <WhyTraivelBento />
+        <CitySampler />
+        <TrustLine />
+        <BottomCTA />
+      </div>
+      <Footer />
+    </>
   );
 }
 
