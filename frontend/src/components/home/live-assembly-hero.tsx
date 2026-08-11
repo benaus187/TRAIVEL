@@ -11,21 +11,40 @@ const STOPS: SampleStop[] = [
   { time: "12:00", name: "Train Street, Hẻm 224", codes: ["social momentum", "transport fit"], verified: true },
 ];
 
+// Total choreographed animation time (last delay + its duration) plus slack.
+// Past this point we force the final visible state via React state instead of
+// CSS animation-delay/forwards — a backgrounded tab, reduced-motion edge case,
+// or anything else that stalls the CSS animation should never leave the
+// content permanently invisible.
+const SETTLE_MS = 2600;
+
 export function LiveAssemblyHero() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [playKey, setPlayKey] = useState(0);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     const el = sectionRef.current;
-    if (!el || !("IntersectionObserver" in window)) return;
+    if (!el || !("IntersectionObserver" in window)) {
+      setSettled(true);
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setPlayKey((k) => k + 1);
+        if (!entry.isIntersecting) return;
+        setPlayKey((k) => k + 1);
+        setSettled(false);
+        if (settleTimer.current) clearTimeout(settleTimer.current);
+        settleTimer.current = setTimeout(() => setSettled(true), SETTLE_MS);
       },
       { threshold: 0.35 }
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      if (settleTimer.current) clearTimeout(settleTimer.current);
+    };
   }, []);
 
   return (
@@ -63,7 +82,7 @@ export function LiveAssemblyHero() {
             <MiniStop
               key={stop.time}
               stop={stop}
-              animate
+              animate={!settled}
               delaySeconds={0.1 + i * 0.75}
               stampDelaySeconds={2.05}
             />
