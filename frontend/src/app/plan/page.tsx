@@ -66,8 +66,18 @@ export default function PlanPage() {
       // on mobile (single-column stack) and can be off-screen when the user
       // hits Generate at the bottom of a tall form — bring it into view so
       // the progress bar is immediately visible instead of looking stalled.
+      //
+      // A single immediate scrollIntoView isn't reliable here: the moment
+      // generate() flips state from idle to streaming, <main>'s content
+      // swaps (empty prompt -> progress block), and Chrome's scroll
+      // anchoring can silently re-adjust scrollTop to compensate for that
+      // layout shift mid-animation, cancelling the scroll. Re-assert once
+      // after that transition has settled.
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      mainRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      const behavior = reduceMotion ? "auto" : "smooth";
+      const scrollToOutput = () => mainRef.current?.scrollIntoView({ behavior, block: "start" });
+      scrollToOutput();
+      window.setTimeout(scrollToOutput, 150);
     },
     onClear: () => setActiveDay(1),
   });
@@ -98,7 +108,7 @@ export default function PlanPage() {
       </aside>
 
       {/* ── Itinerary Output ── */}
-      <main ref={mainRef} className="min-h-[400px] scroll-mt-8">
+      <main ref={mainRef} className="min-h-[400px] scroll-mt-8" style={{ overflowAnchor: "none" }}>
         <Suspense fallback={null}>
           <CheckoutSuccessBanner />
         </Suspense>
