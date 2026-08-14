@@ -12,7 +12,7 @@ function DropdownMenuTrigger({
   className,
   openOnHover = true,
   delay = 15,
-  closeDelay = 150,
+  closeDelay = 75,
   ...props
 }: MenuPrimitive.Trigger.Props) {
   return (
@@ -46,9 +46,9 @@ function DropdownMenuContent({
           data-slot="dropdown-menu-content"
           className={cn(
             "min-w-44 origin-[var(--transform-origin)] rounded-md border border-line-strong bg-popover p-1 text-popover-foreground shadow-lg outline-none",
-            "transition-[opacity,transform] duration-150 ease-out",
+            "transition-[opacity,scale,translate] duration-150 ease-out data-[ending-style]:duration-100 data-[ending-style]:ease-in",
             "data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:-translate-y-1",
-            "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
+            "data-[ending-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:-translate-y-1",
             className
           )}
           {...props}
