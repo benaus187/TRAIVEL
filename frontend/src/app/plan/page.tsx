@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useMediaQuery } from "@base-ui/react/unstable-use-media-query";
@@ -54,12 +54,21 @@ export default function PlanPage() {
     () => stops.filter((s) => (s.day ?? 1) === activeDay),
     [stops, activeDay]
   );
+  const mainRef = useRef<HTMLElement>(null);
 
   const form = useTripBriefForm({
     generate,
     reset,
     getAccessToken,
-    onSubmitStart: () => setActiveDay(1),
+    onSubmitStart: () => {
+      setActiveDay(1);
+      // Generating streams progress into <main>, which sits below the form
+      // on mobile (single-column stack) and can be off-screen when the user
+      // hits Generate at the bottom of a tall form — bring it into view so
+      // the progress bar is immediately visible instead of looking stalled.
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      mainRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    },
     onClear: () => setActiveDay(1),
   });
   const { brief, computedDays, flightNotes, lastSubmittedBrief } = form;
@@ -89,7 +98,7 @@ export default function PlanPage() {
       </aside>
 
       {/* ── Itinerary Output ── */}
-      <main className="min-h-[400px]">
+      <main ref={mainRef} className="min-h-[400px] scroll-mt-8">
         <Suspense fallback={null}>
           <CheckoutSuccessBanner />
         </Suspense>

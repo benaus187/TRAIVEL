@@ -40,11 +40,13 @@ export function TripBriefChapters({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [form]);
 
+  // Extras is optional and deliberately excluded from the tracked rail below
+  // — it never becomes "done" in a meaningful sense, so it shouldn't earn a
+  // checkmark just for existing.
   const chapters: Chapter[] = [
     { key: "basics", label: "Trip basics", done: form.stepValidity.destination },
     { key: "vibe", label: "Vibe check", done: form.stepValidity.vibe },
     { key: "pace", label: "Set the pace", done: form.stepValidity.paceAndBudget },
-    { key: "extras", label: "Extras", done: true },
   ];
   const firstUndone = chapters.findIndex((c) => !c.done);
 
@@ -326,7 +328,7 @@ export function TripBriefChapters({
             </span>
             <div className="flex gap-2">
               {hasResult && (
-                <Button type="button" variant="outline" size="sm" onClick={form.handleClear} className="border-background/30 text-background hover:bg-background/10 hover:text-background">
+                <Button type="button" variant="outline" size="sm" onClick={form.handleClear} className="bg-transparent border-background/30 text-background hover:bg-background/10">
                   Clear
                 </Button>
               )}
