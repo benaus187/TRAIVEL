@@ -173,6 +173,11 @@
   animation: fadeInUp 0.25s ease-out both;
 }
 
+@keyframes d3pop {
+  from { transform: rotate(-6deg) scale(0); opacity: 0; }
+  to   { transform: rotate(-6deg) scale(1); opacity: 1; }
+}
+
 @keyframes progress-slide {
   0%   { transform: translateX(-200%); }
   50%  { transform: translateX(100%); }

@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone, timedelta
 import anthropic
 from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..config import settings
 from ..db import get_db
@@ -136,6 +136,7 @@ class TripBrief(BaseModel):
     budget_usd_total: int = 0
     currency: str = "USD"
     pace: str
+    min_stops_per_day: int | None = Field(default=None, ge=1, le=12)
     avoid: list[str] = []
     transport_mode: str = "public_transport"  # "public_transport" | "walking" | "any"
     include_accommodation: bool = False
@@ -225,12 +226,18 @@ Use this to constrain the schedule: don't plan activity stops before the arrival
     if brief.currency != "USD":
         currency_str = f"Generate all prices in {brief.currency}. "
 
+    pace_str = brief.pace
+    stop_count_str = "Include 4–6 activity stops per day."
+    if brief.pace == "custom" and brief.min_stops_per_day:
+        pace_str = f"custom (traveller wants at least {brief.min_stops_per_day} stops per day)"
+        stop_count_str = f"Include at least {brief.min_stops_per_day} activity stops per day."
+
     return f"""Plan a {brief.days}-day trip to {brief.destination}.
 
 Traveller profile:
 - Interests: {interests_str}
 - Total trip budget: ${brief.budget_usd_total} USD (~${per_day}/day). {currency_str}Plan stops, meals, and transport to stay within this total.
-- Pace: {brief.pace}
+- Pace: {pace_str}
 - Preferred transport: {transport_label}{avoid_str}{flight_str}{places_str}{youtube_str}{weather_str}{accommodation_str}
 
 Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). For each stop:
@@ -243,7 +250,7 @@ Create a realistic, time-blocked itinerary across exactly {brief.days} day(s). F
   - "weather alternate ready" — has a nearby indoor fallback
 - Fill transit_note for every stop EXCEPT the first stop of each day. Use {transport_label}. Be specific: include line/route name, approx time, and fare if applicable.
 
-Include 4–6 activity stops per day. Be specific: use real place names, not generic descriptions.
+{stop_count_str} Be specific: use real place names, not generic descriptions.
 For every stop description, always include an estimated cost at the end (e.g. "~25 {brief.currency}/person", "Free entry", "~120 {brief.currency} for the tour"). This helps the traveller budget their day."""
 
 

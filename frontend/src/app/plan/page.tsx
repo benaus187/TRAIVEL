@@ -1,19 +1,17 @@
 "use client";
 
-import { Suspense, useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { Suspense, useState, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { TripBrief, TripBriefSchema } from "@/lib/schemas/itinerary";
+import { useMediaQuery } from "@base-ui/react/unstable-use-media-query";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
-import { useCurrencyStore } from "@/stores/currency-store";
+import { useTripBriefForm } from "@/hooks/use-trip-brief-form";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlan } from "@/hooks/use-plan";
-import { ReasonCodeChip } from "@/components/reason-code-chip";
 import { StopCard, TransitConnector } from "@/components/stop-card";
 import { TrendPanel } from "@/components/trend-panel";
 import { ChatPanel, ChatUpsell } from "@/components/chat-panel";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 const MapView = dynamic(
@@ -21,245 +19,30 @@ const MapView = dynamic(
   { ssr: false }
 );
 
-const PRESET_INTERESTS = [
-  "food & drink",
-  "art & culture",
-  "nature & outdoors",
-  "history",
-  "shopping",
-  "nightlife",
-  "architecture",
-  "street food",
-];
+const TripBriefChapters = dynamic(
+  () => import("@/components/plan/trip-brief-chapters").then((m) => m.TripBriefChapters)
+);
 
-const PRESET_AVOID = [
-  "crowded places",
-  "tourist traps",
-  "nightlife",
-  "street food",
-  "steep hills",
-  "early mornings",
-];
+const TripBriefSwipeDeck = dynamic(
+  () => import("@/components/plan/trip-brief-swipe-deck").then((m) => m.TripBriefSwipeDeck),
+  { ssr: false }
+);
 
-type GeoSuggestion = { name: string; admin1: string; country: string };
-
-const INITIAL_BRIEF: Partial<TripBrief> = {
-  days: 3,
-  budget_usd_total: 0,
-  pace: "moderate",
-  interests: [],
-  avoid: [],
-  transport_mode: "public_transport",
-  include_accommodation: false,
-};
+// Only precedent for a breakpoint in this file historically; reused here so
+// the form shell switches at the same width the output column already
+// collapses to one column at.
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export default function PlanPage() {
   const { stops, setStops, state, error, quotaError, tripId, itineraryId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
   const { plan } = usePlan();
-  const { currency, symbol, rate } = useCurrencyStore();
-  const [brief, setBrief] = useState<Partial<TripBrief>>(INITIAL_BRIEF);
-  const [budgetLocal, setBudgetLocal] = useState(0);
-  const [endDate, setEndDate] = useState("");
-  const [flightNotes, setFlightNotes] = useState("");
-  const [flightOpen, setFlightOpen] = useState(false);
+  // SSR-safe: renders the desktop shell on the server/first paint, corrects
+  // to the real viewport once mounted — avoids a hydration mismatch.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY, { defaultMatches: true });
 
-  // Destination autocomplete state
-  const [suggestions, setSuggestions] = useState<GeoSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [destInput, setDestInput] = useState("");
-  // True only once the user has picked a suggestion from the geocoding
-  // dropdown — required at submit so a garbled free-typed destination
-  // (e.g. a typo that matches no real place) can't reach generation.
-  const [destinationConfirmed, setDestinationConfirmed] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // Custom interests state
-  const [customInput, setCustomInput] = useState("");
-  const [customInterests, setCustomInterests] = useState<string[]>([]);
-  const [showCustomInput, setShowCustomInput] = useState(false);
-
-  // Form error state
-  const [formError, setFormError] = useState<string | null>(null);
-
-  // Last submitted brief (for retry) — read during render to show the Retry
-  // button, so it must be state, not a ref (react-hooks/refs disallows
-  // reading ref.current during render).
-  const [lastSubmittedBrief, setLastSubmittedBrief] = useState<TripBrief | null>(null);
-
-  // Track the previous brief to clear the form error when the user edits the
-  // form again — set directly during render (React's documented pattern for
-  // "adjusting state when a prop/state changes") instead of a useEffect, so
-  // no extra setState-in-effect render/commit round-trip is needed.
-  const [prevBrief, setPrevBrief] = useState(brief);
-  if (brief !== prevBrief) {
-    setPrevBrief(brief);
-    setFormError(null);
-  }
-
-  // Close suggestions on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  // Days derived from start + end date when both are set, falling back to
-  // brief.days (default 3) otherwise — computed directly instead of written
-  // back into brief via an effect (avoids a setState-in-effect round-trip).
-  const computedDays = useMemo(() => {
-    if (brief.start_date && endDate && endDate >= brief.start_date) {
-      const diff = Math.round(
-        (new Date(endDate).getTime() - new Date(brief.start_date).getTime()) / 86400000
-      ) + 1;
-      return Math.min(14, Math.max(1, diff));
-    }
-    return brief.days;
-  }, [brief.start_date, endDate, brief.days]);
-
-  const fetchSuggestions = useCallback(async (query: string) => {
-    if (query.length < 2) { setSuggestions([]); return; }
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
-    try {
-      const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en`,
-        { signal: abortRef.current.signal }
-      );
-      const data = await res.json();
-      const results: GeoSuggestion[] = ((data.results ?? []) as Record<string, string>[]).map((r) => ({
-        name: r.name ?? "",
-        admin1: r.admin1 ?? "",
-        country: r.country ?? "",
-      })).filter((r) => r.name);
-      setSuggestions(results);
-      setShowSuggestions(results.length > 0);
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") setSuggestions([]);
-    }
-  }, []);
-
-  function handleDestChange(value: string) {
-    setDestInput(value);
-    setBrief((p) => ({ ...p, destination: value }));
-    setDestinationConfirmed(false);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchSuggestions(value), 280);
-  }
-
-  function selectSuggestion(s: GeoSuggestion) {
-    const full = [s.name, s.admin1, s.country].filter(Boolean).join(", ");
-    setDestInput(full);
-    setBrief((p) => ({ ...p, destination: full }));
-    setDestinationConfirmed(true);
-    setShowSuggestions(false);
-  }
-
-  function togglePresetInterest(interest: string) {
-    setBrief((prev) => {
-      const list = (prev.interests ?? []).filter((i) => !customInterests.includes(i));
-      return {
-        ...prev,
-        interests: list.includes(interest)
-          ? [...list.filter((i) => i !== interest), ...customInterests]
-          : [...list, interest, ...customInterests],
-      };
-    });
-  }
-
-  function addCustomInterest(raw: string) {
-    const trimmed = raw.trim().replace(/,$/, "").trim();
-    if (!trimmed || customInterests.includes(trimmed)) return;
-    const next = [...customInterests, trimmed];
-    setCustomInterests(next);
-    setBrief((p) => ({
-      ...p,
-      interests: [...(p.interests ?? []), trimmed],
-    }));
-    setCustomInput("");
-  }
-
-  function removeCustomInterest(interest: string) {
-    const next = customInterests.filter((i) => i !== interest);
-    setCustomInterests(next);
-    setBrief((p) => ({
-      ...p,
-      interests: (p.interests ?? []).filter((i) => i !== interest),
-    }));
-  }
-
-  function handleCustomKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addCustomInterest(customInput);
-    }
-  }
-
-  function toggleAvoid(item: string) {
-    setFormError(null);
-    setBrief((prev) => {
-      const list = prev.avoid ?? [];
-      return {
-        ...prev,
-        avoid: list.includes(item) ? list.filter((i) => i !== item) : [...list, item],
-      };
-    });
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!destinationConfirmed) {
-      setFormError("Select a destination from the list");
-      return;
-    }
-    const budgetUsd = currency === "USD" ? budgetLocal : Math.round(budgetLocal / rate);
-    const days = computedDays ?? 3;
-    const parsed = TripBriefSchema.safeParse({
-      ...brief,
-      days,
-      budget_usd_total: budgetUsd,
-      currency,
-      flight_notes: flightNotes.trim() || undefined,
-    });
-    if (!parsed.success) {
-      setFormError(parsed.error.issues[0].message);
-      return;
-    }
-    setFormError(null);
-    setLastSubmittedBrief(parsed.data);
-    setActiveDay(1);
-    const token = await getAccessToken();
-    generate(parsed.data, token);
-  }
-
-  function handleClear() {
-    reset();
-    setBrief(INITIAL_BRIEF);
-    setBudgetLocal(0);
-    setEndDate("");
-    setFlightNotes("");
-    setFlightOpen(false);
-    setDestInput("");
-    setSuggestions([]);
-    setShowSuggestions(false);
-    setDestinationConfirmed(false);
-    setCustomInput("");
-    setCustomInterests([]);
-    setShowCustomInput(false);
-    setFormError(null);
-    setLastSubmittedBrief(null);
-    setActiveDay(1);
-  }
-
-  const isStreaming = state === "streaming" || state === "verifying";
   const hasResult = stops.length > 0;
-  const presetSelected = (brief.interests ?? []).filter((i) => !customInterests.includes(i));
+  const isStreaming = state === "streaming" || state === "verifying";
 
   // Day pagination
   const totalDays = useMemo(() => {
@@ -271,281 +54,61 @@ export default function PlanPage() {
     () => stops.filter((s) => (s.day ?? 1) === activeDay),
     [stops, activeDay]
   );
+  const mainRef = useRef<HTMLElement>(null);
+
+  const form = useTripBriefForm({
+    generate,
+    reset,
+    getAccessToken,
+    onSubmitStart: () => {
+      setActiveDay(1);
+      // Generating streams progress into <main>, which sits below the form
+      // on mobile (single-column stack) and can be off-screen when the user
+      // hits Generate at the bottom of a tall form — bring it into view so
+      // the progress bar is immediately visible instead of looking stalled.
+      //
+      // A single immediate scrollIntoView isn't reliable here: the moment
+      // generate() flips state from idle to streaming, <main>'s content
+      // swaps (empty prompt -> progress block), and Chrome's scroll
+      // anchoring can silently re-adjust scrollTop to compensate for that
+      // layout shift mid-animation, cancelling the scroll. Re-assert once
+      // after that transition has settled.
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const behavior = reduceMotion ? "auto" : "smooth";
+      const scrollToOutput = () => mainRef.current?.scrollIntoView({ behavior, block: "start" });
+      scrollToOutput();
+      window.setTimeout(scrollToOutput, 150);
+    },
+    onClear: () => setActiveDay(1),
+  });
+  const { brief, computedDays, flightNotes, lastSubmittedBrief } = form;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 items-start">
       {/* ── Trip Brief Form ── */}
-      <aside className="lg:sticky lg:top-8 space-y-6">
-        <div>
-          <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
-            Trip Brief
-          </p>
-          <h2 className="text-xl font-bold">Where are you going?</h2>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {hasResult && (
-            <p className="font-mono text-[10px] text-muted-foreground -mb-2">
-              Clear to edit and plan a new trip.
-            </p>
-          )}
-          {/* Locking the brief once a result exists prevents edits here from
-              silently rewriting the itinerary already shown on the right —
-              only Clear (which resets everything) or Regenerate (same brief)
-              are available past this point. */}
-          <fieldset disabled={hasResult} className="space-y-5">
-          {/* Destination with autocomplete */}
-          <Field label="Destination">
-            <div ref={wrapperRef} className="relative">
-              <input
-                type="text"
-                placeholder="Tokyo, Sydney, Paris…"
-                value={destInput}
-                onChange={(e) => handleDestChange(e.target.value)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-              {showSuggestions && (
-                <ul className="absolute z-10 mt-1 w-full bg-background border border-border rounded-md shadow-md overflow-hidden">
-                  {suggestions.map((s, i) => (
-                    <li
-                      key={i}
-                      onMouseDown={() => selectSuggestion(s)}
-                      className="px-3 py-2 text-sm cursor-pointer hover:bg-muted flex justify-between gap-2"
-                    >
-                      <span className="font-medium">{s.name}</span>
-                      <span className="text-muted-foreground text-xs truncate">
-                        {[s.admin1, s.country].filter(Boolean).join(", ")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Field>
-
-          {/* Start date + End date → auto-computes days */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Start date">
-              <input
-                type="date"
-                value={brief.start_date ?? ""}
-                onChange={(e) =>
-                  setBrief((p) => ({ ...p, start_date: e.target.value || undefined }))
-                }
-                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-            </Field>
-            <Field label="End date">
-              <input
-                type="date"
-                value={endDate}
-                min={brief.start_date ?? undefined}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-            </Field>
-          </div>
-          {computedDays != null && brief.start_date && endDate && (
-            <p className="font-mono text-[10px] text-muted-foreground -mt-2">
-              {computedDays} day{computedDays > 1 ? "s" : ""}
-            </p>
-          )}
-
-          {/* Interests */}
-          <Field label="Interests">
-            <div className="flex flex-wrap gap-2">
-              {PRESET_INTERESTS.map((interest) => {
-                const active = presetSelected.includes(interest);
-                return (
-                  <button
-                    key={interest}
-                    type="button"
-                    onClick={() => togglePresetInterest(interest)}
-                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
-                      active
-                        ? "bg-foreground text-background border-foreground"
-                        : "bg-background text-muted-foreground border-border hover:border-foreground"
-                    }`}
-                  >
-                    {interest}
-                  </button>
-                );
-              })}
-              {/* Others toggle */}
-              <button
-                type="button"
-                onClick={() => setShowCustomInput((v) => !v)}
-                className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
-                  showCustomInput || customInterests.length > 0
-                    ? "bg-foreground text-background border-foreground"
-                    : "bg-background text-muted-foreground border-border hover:border-foreground"
-                }`}
-              >
-                others
-              </button>
-            </div>
-
-            {/* Custom interest input */}
-            {showCustomInput && (
-              <div className="mt-2 space-y-2">
-                <input
-                  type="text"
-                  placeholder="Type interest, press Enter or comma"
-                  value={customInput}
-                  onChange={(e) => setCustomInput(e.target.value)}
-                  onKeyDown={handleCustomKeyDown}
-                  className="w-full border border-border rounded-md px-3 py-2 text-xs font-mono bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-                {customInterests.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {customInterests.map((ci) => (
-                      <span
-                        key={ci}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono bg-foreground text-background"
-                      >
-                        {ci}
-                        <button
-                          type="button"
-                          onClick={() => removeCustomInterest(ci)}
-                          className="opacity-60 hover:opacity-100"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </Field>
-
-          {/* Budget input */}
-          <Field label={`Total trip budget (${currency})`}>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono">
-                {symbol}
-              </span>
-              <input
-                type="number"
-                min={0}
-                step={currency === "VND" ? 500000 : currency === "JPY" ? 1000 : 50}
-                value={budgetLocal || ""}
-                onChange={(e) => setBudgetLocal(Number(e.target.value))}
-                placeholder={currency === "VND" ? "e.g. 50000000" : currency === "JPY" ? "e.g. 300000" : "e.g. 2000"}
-                className="w-full border border-border rounded-md pl-7 pr-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-            </div>
-            {currency !== "USD" && budgetLocal > 0 && (
-              <p className="text-[10px] font-mono text-muted-foreground mt-1">
-                ≈ ${Math.round(budgetLocal / rate).toLocaleString()} USD
-              </p>
-            )}
-          </Field>
-
-          {/* Pace */}
-          <Field label="Pace">
-            <SelectRow
-              options={["relaxed", "moderate", "packed"]}
-              value={brief.pace ?? "moderate"}
-              onChange={(v) =>
-                setBrief((p) => ({ ...p, pace: v as TripBrief["pace"] }))
-              }
-            />
-          </Field>
-
-          {/* Transport mode */}
-          <Field label="Getting around">
-            <SelectRow
-              options={["public_transport", "walking", "any"]}
-              labels={["🚇 Public transport", "🚶 Walking", "🔀 Any"]}
-              value={brief.transport_mode ?? "public_transport"}
-              onChange={(v) =>
-                setBrief((p) => ({ ...p, transport_mode: v as TripBrief["transport_mode"] }))
-              }
-            />
-          </Field>
-
-          {/* Accommodation toggle */}
-          <Field label="Accommodation">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={brief.include_accommodation ?? false}
-                onChange={(e) =>
-                  setBrief((p) => ({ ...p, include_accommodation: e.target.checked }))
-                }
-                className="accent-foreground w-4 h-4"
-              />
-              <span className="text-xs font-mono text-muted-foreground">
-                Include overnight suggestions
-              </span>
-            </label>
-          </Field>
-
-          {/* Flight info */}
-          <Field label="Flights (optional)">
-            <button
-              type="button"
-              onClick={() => setFlightOpen((v) => !v)}
-              className="text-xs font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
-            >
-              {flightOpen ? "▲ hide" : "▼ add flight info"}
-            </button>
-            {flightOpen && (
-              <textarea
-                rows={3}
-                placeholder={`e.g. Inbound: VJ123 from Hanoi, departs 06:30 arrives ${brief.destination ?? "destination"} 07:45\nReturn: VJ124 departs ${brief.destination ?? "destination"} 20:00 back to Hanoi`}
-                value={flightNotes}
-                onChange={(e) => setFlightNotes(e.target.value)}
-                className="mt-2 w-full border border-border rounded-md px-3 py-2 text-xs font-mono bg-background focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-              />
-            )}
-          </Field>
-
-          {/* Avoid */}
-          <Field label="Avoid">
-            <div className="flex flex-wrap gap-2">
-              {PRESET_AVOID.map((item) => {
-                const active = (brief.avoid ?? []).includes(item);
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => toggleAvoid(item)}
-                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
-                      active
-                        ? "bg-destructive/10 text-destructive border-destructive/30"
-                        : "bg-background text-muted-foreground border-border hover:border-foreground"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-          </fieldset>
-
-          {formError && (
-            <p className="text-xs text-destructive font-mono">{formError}</p>
-          )}
-
-          <div className="flex gap-2 pt-1">
-            <Button type="submit" disabled={isStreaming} className="flex-1">
-              {isStreaming ? "Generating…" : hasResult ? "Regenerate" : "Generate itinerary"}
-            </Button>
-            {hasResult && (
-              <Button type="button" variant="outline" onClick={handleClear}>
+      <aside className="lg:sticky lg:top-8">
+        {isDesktop ? (
+          <TripBriefChapters form={form} hasResult={hasResult} isStreaming={isStreaming} />
+        ) : hasResult ? (
+          <div className="rounded-xl border border-line-strong bg-card p-4 space-y-3">
+            <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Trip Brief</p>
+            <p className="text-sm font-bold">{brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}</p>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" disabled={isStreaming} onClick={() => form.handleSubmit()} className="flex-1 bg-vermilion text-white hover:bg-vermilion/90">
+                {isStreaming ? "Generating…" : "Regenerate"}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={form.handleClear}>
                 Clear
               </Button>
-            )}
+            </div>
           </div>
-        </form>
+        ) : (
+          <TripBriefSwipeDeck form={form} isStreaming={isStreaming} />
+        )}
       </aside>
 
       {/* ── Itinerary Output ── */}
-      <main className="min-h-[400px]">
+      <main ref={mainRef} className="min-h-[400px] scroll-mt-8" style={{ overflowAnchor: "none" }}>
         <Suspense fallback={null}>
           <CheckoutSuccessBanner />
         </Suspense>
@@ -807,54 +370,6 @@ function WeatherBanner({ forecasts, activeDay }: { forecasts: WeatherDay[]; acti
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function SelectRow({
-  options,
-  labels,
-  value,
-  onChange,
-}: {
-  options: string[];
-  labels?: string[];
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex gap-2 flex-wrap">
-      {options.map((opt, i) => (
-        <button
-          key={opt}
-          type="button"
-          onClick={() => onChange(opt)}
-          className={`px-3 py-1 rounded-md text-xs font-mono border transition-colors ${
-            value === opt
-              ? "bg-foreground text-background border-foreground"
-              : "bg-background text-muted-foreground border-border hover:border-foreground"
-          }`}
-        >
-          {labels?.[i] ?? opt}
-        </button>
-      ))}
     </div>
   );
 }
