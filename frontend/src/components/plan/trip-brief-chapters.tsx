@@ -59,6 +59,13 @@ export function TripBriefChapters({
         <h2 className="text-xl font-bold">Where are you going?</h2>
       </div>
 
+      {hasResult && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-mono text-amber-700">
+          <span aria-hidden="true">⚠</span>
+          <span>Clear to edit and plan a new trip.</span>
+        </div>
+      )}
+
       <form onSubmit={form.handleSubmit} className="flex gap-3">
         {/* Progress rail */}
         <div className="flex flex-col items-center pt-1.5 shrink-0" aria-hidden="true">
@@ -89,12 +96,6 @@ export function TripBriefChapters({
         </div>
 
         <div className="flex-1 min-w-0 space-y-4">
-          {hasResult && (
-            <p className="font-mono text-[10px] text-muted-foreground -mb-1">
-              Clear to edit and plan a new trip.
-            </p>
-          )}
-
           {/* Locking the brief once a result exists prevents edits here from
               silently rewriting the itinerary already shown — only Clear or
               Regenerate are available past this point. */}
