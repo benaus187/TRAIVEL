@@ -362,21 +362,33 @@ async def generate_itinerary(
                 _save_to_supabase, brief, collected_stops, user_id
             )
 
-            # 3. Verification phase — Google Places per stop + build booking URLs
+            # 3. Verification phase — Google Places per stop + build booking URLs.
+            # Bounded concurrency (was a sequential loop with a fixed 0.5s delay
+            # per stop) — with min_stops_per_day allowing up to 12/day, that made
+            # total verification time long enough to risk the SSE connection
+            # getting cut mid-stream on flaky client networks.
             dest_lat: float | None = None
             dest_lon: float | None = None
             if collected_stops:
                 yield f"data: {json.dumps({'type': 'verifying', 'total': len(collected_stops)})}\n\n"
                 db = get_db()
-                for i, stop in enumerate(collected_stops):
-                    try:
-                        result = await verify_stop(db, stop_ids[i], stop["name"], brief.destination)
-                        if dest_lat is None and result["lat"] and result["lon"]:
-                            dest_lat, dest_lon = result["lat"], result["lon"]
-                        yield f"data: {json.dumps({'type': 'verify', 'index': i, 'id': stop_ids[i], **result})}\n\n"
-                    except Exception:
-                        pass
-                    await asyncio.sleep(0.5)
+                sem = asyncio.Semaphore(5)
+
+                async def _verify_one(i: int, stop: dict) -> tuple[int, dict | None]:
+                    async with sem:
+                        try:
+                            return i, await verify_stop(db, stop_ids[i], stop["name"], brief.destination)
+                        except Exception:
+                            return i, None
+
+                tasks = [asyncio.create_task(_verify_one(i, stop)) for i, stop in enumerate(collected_stops)]
+                for task in asyncio.as_completed(tasks):
+                    i, result = await task
+                    if result is None:
+                        continue
+                    if dest_lat is None and result["lat"] and result["lon"]:
+                        dest_lat, dest_lon = result["lat"], result["lon"]
+                    yield f"data: {json.dumps({'type': 'verify', 'index': i, 'id': stop_ids[i], **result})}\n\n"
 
             # 4. Emit weather (already fetched — re-geocode with verified coords if available)
             if weather_forecast is None and (dest_lat is not None):
