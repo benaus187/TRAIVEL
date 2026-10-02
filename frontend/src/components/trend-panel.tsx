@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { TrendItem } from "@/hooks/use-itinerary-stream";
 
 const COLLAPSED_COUNT = 3;
@@ -56,6 +57,7 @@ function rowHref(item: TrendItem): string {
 }
 
 export function TrendPanel({ trends, destination }: { trends: TrendItem[]; destination: string }) {
+  const t = useTranslations("trend");
   const [expanded, setExpanded] = useState(false);
 
   if (!trends.length) return null;
@@ -79,11 +81,11 @@ export function TrendPanel({ trends, destination }: { trends: TrendItem[]; desti
       <div className="bg-board-bg text-board-fg shadow-lg px-5 md:px-7 pt-5 pb-4">
         <div className="flex items-center justify-between gap-3 mb-4">
           <span className="font-sans font-bold uppercase text-sm md:text-base tracking-wide leading-snug">
-            Departures — Trending in {destination.split(",")[0]}
+            {t("heading", { city: destination.split(",")[0] })}
           </span>
           <span className="shrink-0 flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em]">
             <span className="w-1.5 h-1.5 rounded-full bg-stamp animate-pulse" />
-            LIVE
+            {t("live")}
           </span>
         </div>
 
@@ -127,13 +129,12 @@ export function TrendPanel({ trends, destination }: { trends: TrendItem[]; desti
             onClick={() => setExpanded((v) => !v)}
             className="mt-1 w-full text-center font-mono text-[10px] tracking-[0.14em] uppercase text-board-fg/70 hover:text-board-fg py-2 border-t border-board-fg/10 transition-colors"
           >
-            {expanded ? "Show less ↑" : `Explore all ${ranked.length} → (+${hiddenCount})`}
+            {expanded ? t("showLess") : t("exploreAll", { total: ranked.length, hidden: hiddenCount })}
           </button>
         )}
 
         <p className="mt-4 pt-3 border-t border-dashed border-board-fg/20 font-mono text-[10px] tracking-wide opacity-70">
-          scored by rating &amp; review volume (places) or view count (youtube) via {sourceLabel} · sponsored and
-          repeated content filtered out
+          {t("disclaimer", { sourceLabel })}
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { TripBrief } from "@/lib/schemas/itinerary";
 import type { TripBriefForm } from "@/hooks/use-trip-brief-form";
 import { PRESET_INTERESTS, PRESET_AVOID, PACE_OPTIONS } from "@/hooks/use-trip-brief-form";
@@ -12,8 +13,8 @@ import {
   Stepper,
   INTEREST_ICONS,
   AVOID_ICONS,
-  PACE_META,
-  TRANSPORT_META,
+  PACE_EMOJI,
+  TRANSPORT_EMOJI,
 } from "./trip-brief-widgets";
 
 type Chapter = { key: string; label: string; done: boolean };
@@ -27,6 +28,12 @@ export function TripBriefChapters({
   hasResult: boolean;
   isStreaming: boolean;
 }) {
+  const t = useTranslations("plan");
+  const tCommon = useTranslations("common");
+  const tInterests = useTranslations("tripBrief.interests");
+  const tAvoid = useTranslations("tripBrief.avoid");
+  const tPace = useTranslations("tripBrief.pace");
+  const tTransport = useTranslations("tripBrief.transport");
   const [extrasOpen, setExtrasOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -44,9 +51,9 @@ export function TripBriefChapters({
   // — it never becomes "done" in a meaningful sense, so it shouldn't earn a
   // checkmark just for existing.
   const chapters: Chapter[] = [
-    { key: "basics", label: "Trip basics", done: form.stepValidity.destination },
-    { key: "vibe", label: "Vibe check", done: form.stepValidity.vibe },
-    { key: "pace", label: "Set the pace", done: form.stepValidity.paceAndBudget },
+    { key: "basics", label: t("chapters.basics.title"), done: form.stepValidity.destination },
+    { key: "vibe", label: t("chapters.vibe.title"), done: form.stepValidity.vibe },
+    { key: "pace", label: t("chapters.pace.title"), done: form.stepValidity.paceAndBudget },
   ];
   const firstUndone = chapters.findIndex((c) => !c.done);
 
@@ -54,15 +61,15 @@ export function TripBriefChapters({
     <div className="space-y-6">
       <div>
         <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
-          Trip Brief
+          {t("tripBriefEyebrow")}
         </p>
-        <h2 className="text-xl font-bold">Where are you going?</h2>
+        <h2 className="text-xl font-bold">{t("chapters.heading")}</h2>
       </div>
 
       {hasResult && (
         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-mono text-amber-700">
           <span aria-hidden="true">⚠</span>
-          <span>Clear to edit and plan a new trip.</span>
+          <span>{t("clearToEditBanner")}</span>
         </div>
       )}
 
@@ -101,11 +108,11 @@ export function TripBriefChapters({
               Regenerate are available past this point. */}
           <fieldset disabled={hasResult} className="space-y-4">
             {/* Chapter 1 — Trip basics */}
-            <ChapterCard num={1} title="Trip basics" done={form.stepValidity.destination} muted={false}>
+            <ChapterCard num={1} title={t("chapters.basics.title")} done={form.stepValidity.destination} muted={false}>
               <div ref={wrapperRef} className="relative">
                 <input
                   type="text"
-                  placeholder="Tokyo, Sydney, Paris…"
+                  placeholder={tCommon("destinationPlaceholder")}
                   value={form.destInput}
                   onChange={(e) => form.handleDestChange(e.target.value)}
                   onFocus={() => form.suggestions.length > 0 && form.setShowSuggestions(true)}
@@ -145,13 +152,13 @@ export function TripBriefChapters({
               </div>
               {form.computedDays != null && form.brief.start_date && form.endDate && (
                 <p className="font-mono text-[10px] text-muted-foreground mt-1.5">
-                  {form.computedDays} day{form.computedDays > 1 ? "s" : ""}
+                  {tCommon("days", { count: form.computedDays })}
                 </p>
               )}
             </ChapterCard>
 
             {/* Chapter 2 — Vibe check */}
-            <ChapterCard num={2} title="Vibe check" done={form.stepValidity.vibe} muted={!form.stepValidity.destination}>
+            <ChapterCard num={2} title={t("chapters.vibe.title")} done={form.stepValidity.vibe} muted={!form.stepValidity.destination}>
               <div className="flex flex-wrap gap-1.5">
                 {PRESET_INTERESTS.map((interest) => (
                   <Chip
@@ -159,7 +166,7 @@ export function TripBriefChapters({
                     selected={form.presetSelected.includes(interest)}
                     onClick={() => form.togglePresetInterest(interest)}
                   >
-                    {INTEREST_ICONS[interest]} {interest}
+                    {INTEREST_ICONS[interest]} {tInterests(interest)}
                   </Chip>
                 ))}
                 <Chip
@@ -169,14 +176,14 @@ export function TripBriefChapters({
                     el?.focus();
                   }}
                 >
-                  ＋ add your own
+                  {t("chapters.addYourOwn")}
                 </Chip>
               </div>
               <div className="mt-2.5 space-y-2">
                 <input
                   id="chapters-custom-interest"
                   type="text"
-                  placeholder="Type interest, press Enter or comma"
+                  placeholder={t("chapters.customInterestPlaceholder")}
                   value={form.customInput}
                   onChange={(e) => form.setCustomInput(e.target.value)}
                   onKeyDown={form.handleCustomKeyDown}
@@ -205,14 +212,14 @@ export function TripBriefChapters({
             </ChapterCard>
 
             {/* Chapter 3 — Set the pace */}
-            <ChapterCard num={3} title="Set the pace" done={form.stepValidity.paceAndBudget} muted={!form.stepValidity.vibe}>
+            <ChapterCard num={3} title={t("chapters.pace.title")} done={form.stepValidity.paceAndBudget} muted={!form.stepValidity.vibe}>
               <div className="flex items-baseline justify-between mb-1">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Total budget ({form.currency})
+                  {t("chapters.budgetLabel", { currency: form.currency })}
                 </span>
                 {form.currency !== "USD" && form.budgetLocal > 0 && (
                   <span className="font-mono text-[10px] text-muted-foreground">
-                    ≈ ${Math.round(form.budgetLocal / form.rate).toLocaleString()} USD
+                    {t("chapters.approxUsd", { amount: Math.round(form.budgetLocal / form.rate).toLocaleString() })}
                   </span>
                 )}
               </div>
@@ -226,41 +233,41 @@ export function TripBriefChapters({
                   step={form.currency === "VND" ? 500000 : form.currency === "JPY" ? 1000 : 50}
                   value={form.budgetLocal || ""}
                   onChange={(e) => form.setBudgetLocal(Number(e.target.value))}
-                  placeholder={form.currency === "VND" ? "e.g. 50000000" : form.currency === "JPY" ? "e.g. 300000" : "e.g. 2000"}
+                  placeholder={`${tCommon("eg")} ${form.currency === "VND" ? "50000000" : form.currency === "JPY" ? "300000" : "2000"}`}
                   className="w-full border border-border rounded-lg pl-7 pr-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
 
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mt-4 mb-1.5">Pace</p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mt-4 mb-1.5">{t("chapters.paceLabel")}</p>
               <div className="grid grid-cols-4 gap-1.5">
                 {PACE_OPTIONS.map((p) => (
                   <TapCard key={p} selected={form.brief.pace === p} onClick={() => form.setPace(p)} className="text-center px-2">
-                    <span className="block text-base leading-none mb-1">{PACE_META[p].emoji}</span>
-                    {PACE_META[p].label}
+                    <span className="block text-base leading-none mb-1">{PACE_EMOJI[p]}</span>
+                    {tPace(`${p}.label`)}
                   </TapCard>
                 ))}
               </div>
               {form.brief.pace === "custom" && (
                 <div className="mt-2">
                   <Stepper
-                    label="Minimum stops / day"
+                    label={tCommon("minStopsPerDay")}
                     value={form.brief.min_stops_per_day ?? 5}
                     onChange={form.setMinStopsPerDay}
                   />
                 </div>
               )}
 
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mt-4 mb-1.5">Getting around</p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mt-4 mb-1.5">{t("chapters.gettingAround")}</p>
               <div className="grid grid-cols-3 gap-1.5">
-                {(Object.keys(TRANSPORT_META) as TripBrief["transport_mode"][]).map((mode) => (
+                {(Object.keys(TRANSPORT_EMOJI) as TripBrief["transport_mode"][]).map((mode) => (
                   <TapCard
                     key={mode}
                     selected={(form.brief.transport_mode ?? "public_transport") === mode}
                     onClick={() => form.setTransportMode(mode)}
                     className="text-center px-1"
                   >
-                    <span className="block text-base leading-none mb-1">{TRANSPORT_META[mode].emoji}</span>
-                    {TRANSPORT_META[mode].label}
+                    <span className="block text-base leading-none mb-1">{TRANSPORT_EMOJI[mode]}</span>
+                    {tTransport(mode)}
                   </TapCard>
                 ))}
               </div>
@@ -274,7 +281,7 @@ export function TripBriefChapters({
                 className="flex w-full items-center justify-between text-left"
               >
                 <span className="text-sm font-bold">
-                  Extras <span className="font-normal text-muted-foreground text-xs">(optional)</span>
+                  {t("chapters.extrasLabel")} <span className="font-normal text-muted-foreground text-xs">{tCommon("optionalParen")}</span>
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">{extrasOpen ? "−" : "＋"}</span>
               </button>
@@ -288,18 +295,18 @@ export function TripBriefChapters({
                       className="accent-foreground w-4 h-4"
                     />
                     <span className="text-xs font-mono text-muted-foreground">
-                      Include overnight suggestions
+                      {t("extras.includeAccommodation")}
                     </span>
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="Flight info (optional) — arrival/departure times"
+                    placeholder={t("extras.flightPlaceholder")}
                     value={form.flightNotes}
                     onChange={(e) => form.setFlightNotes(e.target.value)}
                     className="w-full border border-border rounded-lg px-3 py-2 text-xs font-mono bg-background focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                   />
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Avoid</p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">{t("extras.avoidLabel")}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {PRESET_AVOID.map((item) => (
                         <Chip
@@ -308,7 +315,7 @@ export function TripBriefChapters({
                           selected={(form.brief.avoid ?? []).includes(item)}
                           onClick={() => form.toggleAvoid(item)}
                         >
-                          {AVOID_ICONS[item]} {item}
+                          {AVOID_ICONS[item]} {tAvoid(item)}
                         </Chip>
                       ))}
                     </div>
@@ -325,16 +332,16 @@ export function TripBriefChapters({
           {/* Sticky CTA */}
           <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-xl bg-foreground px-4 py-3 text-background shadow-lg">
             <span className="font-mono text-[11px] text-background/70">
-              {chapters.filter((c) => c.done).length} of {chapters.length} chapters done
+              {t("chapters.progressLabel", { done: chapters.filter((c) => c.done).length, total: chapters.length })}
             </span>
             <div className="flex gap-2">
               {hasResult && (
                 <Button type="button" variant="outline" size="sm" onClick={form.handleClear} className="bg-transparent border-background/30 text-background hover:bg-background/10">
-                  Clear
+                  {tCommon("clear")}
                 </Button>
               )}
               <Button type="submit" size="sm" disabled={isStreaming} className="bg-vermilion text-white hover:bg-vermilion/90">
-                {isStreaming ? "Generating…" : hasResult ? "Regenerate" : "Generate itinerary →"}
+                {isStreaming ? tCommon("generating") : hasResult ? t("regenerate") : t("generateItinerary")}
               </Button>
             </div>
           </div>

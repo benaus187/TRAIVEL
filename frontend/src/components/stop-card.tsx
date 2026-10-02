@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { useTranslations } from "next-intl";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Stop } from "@/lib/schemas/itinerary";
@@ -62,6 +63,7 @@ export function TransitConnector({ from, to }: { from: Stop; to: Stop }) {
 }
 
 function VerifiedStamp({ verified }: { verified: boolean }) {
+  const t = useTranslations("stopCard");
   const ringId = useId();
   const filterId = useId();
 
@@ -69,10 +71,8 @@ function VerifiedStamp({ verified }: { verified: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-3 py-4 text-center">
         <div className="w-14 h-14 rounded-full border border-dashed border-line-strong" />
-        <p className="font-mono text-[9px] tracking-wide text-ink-soft leading-relaxed">
-          not yet
-          <br />
-          verified
+        <p className="font-mono text-[9px] tracking-wide text-ink-soft leading-relaxed max-w-[9ch]">
+          {t("notVerified")}
         </p>
       </div>
     );
@@ -102,20 +102,22 @@ function VerifiedStamp({ verified }: { verified: boolean }) {
           filter={`url(#${filterId})`}
         >
           <textPath href={`#${ringId}`} startOffset="2%">
-            VERIFIED · GOOGLE PLACES · VERIFIED · GOOGLE PLACES ·
+            {`${t("verifiedStamp")} · GOOGLE PLACES · ${t("verifiedStamp")} · GOOGLE PLACES ·`}
           </textPath>
         </text>
       </svg>
       <p className="font-mono text-[9px] tracking-wide text-ink-soft text-center leading-relaxed">
-        <span className="text-foreground font-semibold">Hours &amp; location</span>
+        <span className="text-foreground font-semibold">{t("hoursLocation")}</span>
         <br />
-        cross-checked live
+        {t("crossChecked")}
       </p>
     </div>
   );
 }
 
 export function StopCard({ stop }: { stop: Stop }) {
+  const t = useTranslations("stopCard");
+  const tCommon = useTranslations("common");
   const isAccommodation = stop.name.startsWith("Overnight —");
 
   if (isAccommodation) {
@@ -133,7 +135,7 @@ export function StopCard({ stop }: { stop: Stop }) {
             rel="noopener noreferrer"
             className="no-print inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
           >
-            🏨 Search hotels
+            {t("searchHotels")}
           </a>
         </CardContent>
       </Card>
@@ -148,7 +150,7 @@ export function StopCard({ stop }: { stop: Stop }) {
       {/* Time block */}
       <div className="flex flex-row md:flex-col items-center justify-center gap-1 md:gap-1.5 bg-navy text-background px-4 py-3 md:py-4 text-center">
         <span className="font-mono font-bold text-2xl tabular-nums">{stop.time}</span>
-        <span className="font-mono text-[10px] tracking-[0.18em] opacity-75">DEPART</span>
+        <span className="font-mono text-[10px] tracking-[0.18em] opacity-75">{tCommon("depart")}</span>
       </div>
 
       {/* Body */}
@@ -181,7 +183,7 @@ export function StopCard({ stop }: { stop: Stop }) {
         </div>
 
         {stop.weather_alternate && (
-          <p className="text-xs text-ink-soft font-mono mt-3">☁ alt: {stop.weather_alternate}</p>
+          <p className="text-xs text-ink-soft font-mono mt-3">{t("weatherAlt", { alternate: stop.weather_alternate })}</p>
         )}
 
         <div className="flex gap-2 pt-3 flex-wrap no-print">
@@ -191,7 +193,7 @@ export function StopCard({ stop }: { stop: Stop }) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
           >
-            ↗ View on map
+            {t("viewOnMap")}
           </a>
           <a
             href={`https://www.getyourguide.com/s/?q=${encodeURIComponent(stop.name)}`}
@@ -199,7 +201,7 @@ export function StopCard({ stop }: { stop: Stop }) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground border border-border rounded px-2.5 py-1 transition-colors"
           >
-            🎟 Book tickets
+            {t("bookTickets")}
           </a>
         </div>
       </div>

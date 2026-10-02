@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import type { ReasonCode } from "@/lib/schemas/itinerary";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function MiniStop({
   /** If set, the card mounts hidden and transitions to visible after this delay — used to stagger a sequence. Omit for an already-visible card. */
   enterDelayMs?: number;
 }) {
+  const t = useTranslations("common");
   const [revealed, setRevealed] = useState(enterDelayMs == null);
   const [stampRevealed, setStampRevealed] = useState(enterDelayMs == null);
 
@@ -52,7 +54,7 @@ export function MiniStop({
     >
       <div className="flex flex-col items-center justify-center gap-0.5 bg-navy text-background px-1.5 py-2.5">
         <span className="font-mono font-bold text-base tabular-nums">{stop.time}</span>
-        <span className="font-mono text-[8px] tracking-[0.16em] opacity-75">DEPART</span>
+        <span className="font-mono text-[8px] tracking-[0.16em] opacity-75">{t("depart")}</span>
       </div>
       <div className="flex flex-col gap-1.5 px-3.5 py-2.5 border-l-2 border-dashed border-line min-w-0">
         <div className="flex items-center justify-between gap-2">
@@ -65,7 +67,7 @@ export function MiniStop({
                 stampRevealed ? "opacity-100 scale-100 -rotate-[11deg]" : "opacity-0 scale-[0.6] -rotate-[14deg]"
               )}
             >
-              ✓ verified
+              {t("verified")}
             </span>
           )}
         </div>

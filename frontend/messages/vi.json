@@ -1,0 +1,349 @@
+{
+  "common": {
+    "loading": "Đang tải…",
+    "loadingLower": "đang tải…",
+    "clear": "Xóa",
+    "generating": "Đang tạo…",
+    "cancel": "Hủy",
+    "retry": "Thử lại",
+    "takingLonger": "Đang mất nhiều thời gian hơn thường lệ…",
+    "days": "{count} ngày",
+    "dayNumber": "Ngày {n}",
+    "printPdf": "in / PDF",
+    "depart": "KHỞI HÀNH",
+    "verified": "✓ đã xác minh",
+    "destinationPlaceholder": "Tokyo, Sydney, Paris…",
+    "minStopsPerDay": "Số điểm dừng tối thiểu / ngày",
+    "eg": "vd.",
+    "optionalParen": "(tùy chọn)",
+    "none": "Không có"
+  },
+  "languageSwitcher": {
+    "label": "Ngôn ngữ"
+  },
+  "nav": {
+    "planATrip": "Lên kế hoạch chuyến đi",
+    "profile": "Hồ sơ",
+    "myTrips": "Chuyến đi của tôi",
+    "upgrade": "Nâng cấp",
+    "premium": "Premium",
+    "signOut": "Đăng xuất",
+    "signIn": "Đăng nhập"
+  },
+  "profile": {
+    "eyebrow": "Tài khoản",
+    "title": "Hồ sơ",
+    "nameLabel": "Tên",
+    "namePlaceholder": "Tên của bạn",
+    "emailLabel": "Email",
+    "phoneLabel": "Số điện thoại",
+    "phonePlaceholder": "+84 912 345 678",
+    "dobLabel": "Ngày sinh",
+    "languageLabel": "Ngôn ngữ",
+    "save": "Lưu thay đổi",
+    "saved": "✓ đã lưu"
+  },
+  "footer": {
+    "tagline": "Mọi điểm dừng đều được xác minh. Mọi lý do đều được giải thích.",
+    "fieldEmail": "Email",
+    "fieldGithub": "GitHub",
+    "fieldLinkedin": "LinkedIn",
+    "privacyPolicy": "Chính sách bảo mật",
+    "termsOfService": "Điều khoản dịch vụ"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Lên kế hoạch du lịch bằng AI",
+      "titleLine1": "Chuyến đi tiếp theo của bạn,",
+      "titleItalic": "được AI lên kế hoạch.",
+      "titleLine2": "Xác minh từng điểm dừng.",
+      "subtitle": "TRAIVEL xây dựng lịch trình theo khung giờ với dữ liệu địa điểm thực và thời tiết trực tiếp — rồi giải thích chính xác vì sao mỗi điểm dừng được chọn.",
+      "cta": "Lên kế hoạch chuyến đi →",
+      "noSignIn": "Không cần đăng nhập để bắt đầu"
+    },
+    "bento": {
+      "eyebrow": "Vì sao chọn TRAIVEL",
+      "trendSignals": {
+        "label": "Tín hiệu xu hướng",
+        "title": "Những nơi mọi người đang thực sự ghé thăm",
+        "body": "Lấy từ Google Places, xếp hạng theo mức độ phổ biến — không phải cơ sở dữ liệu tĩnh từ năm 2023."
+      },
+      "demoHeading": "Khởi hành — Hà Nội",
+      "reasonCodes": {
+        "label": "Mã lý do",
+        "title": "Mỗi điểm dừng đều có giải thích rõ ràng",
+        "body": "Không còn gợi ý AI kiểu hộp đen."
+      },
+      "verification": {
+        "label": "Xác minh tích hợp sẵn",
+        "title": "Không phải hậu kỳ. Là một phần của quá trình tạo.",
+        "body": "Dữ liệu địa điểm và thời tiết được đưa vào AI trước khi nó viết lịch trình của bạn."
+      },
+      "cafeStop": "Điểm dừng cà phê"
+    },
+    "citySampler": {
+      "eyebrow": "Xem cách nó hoạt động cho chuyến đi của bạn",
+      "title": "Chọn một thành phố. Xem một điểm dừng thực xuất hiện.",
+      "subtitle": "Cùng cơ chế xác minh, cùng mã lý do như trên — hãy thử với điểm đến bạn chọn trước khi tạo cả lịch trình đầy đủ.",
+      "cta": "Lên kế hoạch chuyến đi của riêng bạn →",
+      "noSignIn": "Không cần đăng nhập để dùng thử"
+    },
+    "bottomCta": {
+      "titlePrefix": "Không như ChatGPT,",
+      "titleItalic": "TRAIVEL cho bạn thấy quá trình thực hiện.",
+      "subtitle": "Mọi điểm dừng đều được xác minh. Mọi lý do đều được giải thích. Dữ liệu thực, không phải ảo giác.",
+      "cta": "Bắt đầu lên kế hoạch →"
+    },
+    "trustLine": {
+      "stat1": "số điểm dừng được xác minh với Google Places + thời tiết trực tiếp",
+      "stat2": "mã lý do có kiểu, giải thích mọi điểm dừng, không hộp đen",
+      "stat3": "cơ sở dữ liệu tĩnh — dữ liệu xu hướng được lấy trực tiếp, không lưu từ năm 2023"
+    }
+  },
+  "login": {
+    "eyebrow": "Đăng nhập",
+    "title": "Lưu & chia sẻ chuyến đi của bạn",
+    "subtitle": "Đăng nhập để truy cập các lịch trình đã lưu và chia sẻ công khai.",
+    "google": "Tiếp tục với Google",
+    "or": "hoặc",
+    "sentTitle": "Kiểm tra email của bạn",
+    "sentBody": "Chúng tôi đã gửi liên kết đăng nhập đến <b>{email}</b>",
+    "emailPlaceholder": "your@email.com",
+    "sending": "Đang gửi…",
+    "sendMagicLink": "Gửi liên kết đăng nhập",
+    "back": "← quay lại"
+  },
+  "pricing": {
+    "eyebrow": "Bảng giá",
+    "title": "Miễn phí để lên kế hoạch. Premium để lên kế hoạch không giới hạn.",
+    "cancelBanner": "Đã hủy thanh toán — chưa có khoản phí nào được tính.",
+    "monthly": "Hàng tháng",
+    "annual": "Hàng năm",
+    "freeTitle": "Miễn phí",
+    "free": {
+      "feature1": "5 lượt tạo lịch trình / ngày",
+      "feature2": "Xác minh đầy đủ (địa điểm + thời tiết)",
+      "feature3": "Tín hiệu xu hướng, xem bản đồ, liên kết chia sẻ"
+    },
+    "premiumTitle": "Premium",
+    "perMonth": "/tháng",
+    "perYear": "/năm",
+    "premium": {
+      "feature1": "Tạo lịch trình không giới hạn",
+      "feature2": "Tất cả tính năng của gói Miễn phí",
+      "feature3": "Hỗ trợ ưu tiên"
+    },
+    "manageSubscription": "Quản lý gói đăng ký",
+    "upgradeToPremium": "Nâng cấp lên Premium",
+    "checkoutError": "Không thể bắt đầu thanh toán — vui lòng thử lại.",
+    "portalError": "Không thể mở cổng quản lý thanh toán — vui lòng thử lại."
+  },
+  "privacy": {
+    "metaTitle": "Chính sách bảo mật — TRAIVEL",
+    "eyebrow": "Chính sách bảo mật",
+    "title": "TRAIVEL làm gì với dữ liệu của bạn",
+    "intro": "TRAIVEL là một dự án portfolio do một cá nhân xây dựng, không phải một công ty. Trang này mô tả những gì thực sự xảy ra với dữ liệu của bạn khi sử dụng ứng dụng.",
+    "collected": {
+      "heading": "Dữ liệu được thu thập",
+      "body": "Nếu bạn đăng nhập, địa chỉ email và (với đăng nhập Google) tên cùng ảnh đại diện của bạn được lưu trữ qua Supabase Auth. Các yêu cầu chuyến đi bạn gửi (điểm đến, ngày tháng, sở thích, ngân sách) và lịch trình được tạo ra từ đó sẽ được lưu lại để bạn xem lại và chia sẻ. Việc sử dụng ẩn danh, không đăng nhập cũng được hỗ trợ và không yêu cầu tài khoản."
+    },
+    "thirdParty": {
+      "heading": "Dịch vụ bên thứ ba",
+      "body": "Việc tạo lịch trình sẽ gửi yêu cầu chuyến đi của bạn đến Claude API của Anthropic. Tên địa điểm được đối chiếu với Google Places API và Open-Meteo cho thời tiết; YouTube Data API được dùng cho tín hiệu xu hướng. Thanh toán (gói Premium) được xử lý bởi Stripe — TRAIVEL không bao giờ thấy hoặc lưu trữ thông tin thẻ của bạn. Không có dữ liệu nào của bạn được bán cho bên thứ ba."
+    },
+    "controls": {
+      "heading": "Quyền kiểm soát của bạn",
+      "body": "Bạn có thể xóa các chuyến đi của mình từ trang Chuyến đi của tôi. Để xóa hoàn toàn tài khoản hoặc đặt câu hỏi về dữ liệu của bạn, hãy email"
+    }
+  },
+  "terms": {
+    "metaTitle": "Điều khoản dịch vụ — TRAIVEL",
+    "eyebrow": "Điều khoản dịch vụ",
+    "title": "Phiên bản ngắn gọn",
+    "intro": "TRAIVEL là một dự án portfolio do một cá nhân xây dựng, được cung cấp nguyên trạng và không có bảo hành dưới bất kỳ hình thức nào.",
+    "usingItinerary": {
+      "heading": "Sử dụng lịch trình",
+      "body": "Lịch trình được tạo bởi AI và đối chiếu với Google Places cùng dữ liệu thời tiết tại thời điểm tạo, nhưng địa điểm có thể đóng cửa, thay đổi giờ hoạt động, hoặc không còn tồn tại. Luôn kiểm tra lại giờ mở cửa, giá cả và tình trạng còn chỗ trước khi bạn tin tưởng vào một điểm dừng — đặc biệt với những việc nhạy cảm về thời gian hoặc đã đặt trước."
+    },
+    "billing": {
+      "heading": "Gói Premium & thanh toán",
+      "body": "Các gói đăng ký Premium được thanh toán và quản lý qua Stripe. Bạn có thể xem hóa đơn, cập nhật phương thức thanh toán, hoặc hủy bất cứ lúc nào từ cổng quản lý thanh toán được liên kết trên trang Bảng giá — việc hủy sẽ dừng các khoản phí trong tương lai nhưng không hoàn tiền cho kỳ thanh toán hiện tại."
+    },
+    "noWarranty": {
+      "heading": "Không bảo hành",
+      "body": "TRAIVEL được cung cấp mà không có bất kỳ bảo hành nào, dù rõ ràng hay ngụ ý. TRAIVEL không chịu trách nhiệm cho các quyết định du lịch dựa trên kết quả của nó. Nếu có gì đó trông có vẻ lỗi hoặc sai, hãy email"
+    }
+  },
+  "trips": {
+    "eyebrow": "Chuyến đi của tôi",
+    "newTrip": "+ Chuyến đi mới",
+    "empty": "Chưa có chuyến đi nào.",
+    "planFirst": "Lên kế hoạch chuyến đi đầu tiên",
+    "view": "↗ xem",
+    "copied": "✓ đã sao chép",
+    "copyLink": "sao chép liên kết",
+    "confirmDelete": "xác nhận xóa?",
+    "delete": "xóa"
+  },
+  "sharedTrip": {
+    "notFound": "Không tìm thấy chuyến đi.",
+    "planNew": "Lên kế hoạch chuyến đi mới",
+    "eyebrow": "Lịch trình được chia sẻ",
+    "tripFallback": "Chuyến đi",
+    "planYourOwn": "Lên kế hoạch chuyến đi của riêng bạn với TRAIVEL →"
+  },
+  "plan": {
+    "tripBriefEyebrow": "Yêu cầu chuyến đi",
+    "regenerate": "Tạo lại",
+    "clearToEditBanner": "Nhấn Xóa để chỉnh sửa và lên kế hoạch chuyến đi mới.",
+    "idlePrompt": "Điền yêu cầu chuyến đi và tạo lịch trình của bạn.",
+    "quotaSignIn": "Đăng nhập để có 5 lượt tạo/ngày",
+    "quotaUpgrade": "Gói miễn phí: 5 lượt/ngày. Nâng cấp lên Premium để tạo không giới hạn →",
+    "discovering": "Đang khám phá địa điểm ở {destination}…",
+    "planningProgress": "Đang lên kế hoạch lịch trình… {count} điểm dừng cho đến nay",
+    "verifyingProgress": "Đang xác minh điểm dừng {current} trên {total}…",
+    "saved": "✓ đã lưu",
+    "copyShareLink": "sao chép liên kết chia sẻ",
+    "signInToShare": "đăng nhập để chia sẻ",
+    "checkoutSuccess": "Bạn đã là thành viên Premium — mở khóa lượt tạo không giới hạn.",
+    "weatherLabel": "thời tiết · {location}",
+    "generateItinerary": "Tạo lịch trình →",
+    "chapters": {
+      "heading": "Bạn muốn đi đâu?",
+      "basics": { "title": "Thông tin cơ bản" },
+      "vibe": { "title": "Chọn phong cách" },
+      "pace": { "title": "Chọn nhịp độ" },
+      "budgetLabel": "Tổng ngân sách ({currency})",
+      "approxUsd": "≈ ${amount} USD",
+      "paceLabel": "Nhịp độ",
+      "gettingAround": "Di chuyển",
+      "extrasLabel": "Tùy chọn thêm",
+      "addYourOwn": "＋ thêm mục của bạn",
+      "customInterestPlaceholder": "Nhập sở thích, nhấn Enter hoặc dấu phẩy",
+      "progressLabel": "{done}/{total} phần đã hoàn thành"
+    },
+    "extras": {
+      "includeAccommodation": "Gợi ý chỗ nghỉ qua đêm",
+      "flightPlaceholder": "Thông tin chuyến bay (tùy chọn) — giờ đến/đi",
+      "avoidLabel": "Tránh"
+    },
+    "review": {
+      "destination": "Điểm đến",
+      "dates": "Ngày",
+      "interests": "Sở thích",
+      "budget": "Ngân sách",
+      "pace": "Nhịp độ",
+      "avoid": "Tránh",
+      "customPaceMin": "Tùy chỉnh · tối thiểu {n} điểm dừng/ngày"
+    },
+    "swipeDeck": {
+      "progressAriaLabel": "Tiến trình yêu cầu chuyến đi",
+      "prevAria": "Câu hỏi trước",
+      "nextAria": "Câu hỏi tiếp theo",
+      "nudgeDestination": "Hãy chọn một điểm đến từ danh sách trước",
+      "nudgeInterest": "Chọn ít nhất một sở thích",
+      "nudgeBudget": "Nhập ngân sách lớn hơn 0",
+      "customInterestPlaceholder": "Thêm sở thích của bạn, nhấn Enter hoặc dấu phẩy",
+      "perDaySummary": "≈ {symbol}{perDay}/ngày cho {days} ngày",
+      "back": "← Quay lại",
+      "next": "Tiếp →",
+      "continue": "Tiếp tục →",
+      "screens": {
+        "whereWhen": "Đâu & khi nào",
+        "vibeCheck": "Chọn phong cách",
+        "setThePace": "Chọn nhịp độ",
+        "budget": "Ngân sách",
+        "extras": "Tùy chọn thêm",
+        "review": "Xem lại"
+      },
+      "basics": {
+        "title": "Bạn muốn đến đâu?",
+        "subtitle": "Nhập tên thành phố — chúng tôi sẽ xác minh nó có tồn tại khi bạn gõ."
+      },
+      "vibe": {
+        "title": "Bạn thích điều gì?",
+        "subtitle": "Chọn tất cả những gì phù hợp."
+      },
+      "pace": {
+        "title": "Chọn nhịp độ của bạn",
+        "subtitle": "Mỗi ngày nên dày đặc đến mức nào?"
+      },
+      "budget": {
+        "title": "Ngân sách cho chuyến đi",
+        "subtitle": "Tổng cộng, bao gồm tất cả."
+      },
+      "extras": {
+        "title": "Còn điều gì khác không?",
+        "subtitle": "Tùy chọn — bỏ qua nếu bạn đã sẵn sàng."
+      },
+      "review": {
+        "title": "Đã hoàn tất yêu cầu",
+        "subtitle": "Đây là những gì chúng tôi sẽ lên kế hoạch — quay lại để chỉnh sửa bất cứ điều gì."
+      }
+    }
+  },
+  "chat": {
+    "upsellTeaser": "💬 Trò chuyện để thêm, xóa, hoặc thay đổi điểm dừng",
+    "upsellCta": "Tính năng Premium — Nâng cấp lên Premium →",
+    "heading": "Trò chuyện để tinh chỉnh lịch trình này",
+    "emptyHint": "Hãy thử \"thêm một điểm dừng cà phê sau bữa sáng\" hoặc \"tôi đã đặt khách sạn gần Quận 1, giữ các điểm dừng gần đó\".",
+    "thinking": "Đang xử lý…",
+    "placeholder": "Yêu cầu một thay đổi…",
+    "send": "Gửi"
+  },
+  "trend": {
+    "heading": "Khởi hành — Xu hướng tại {city}",
+    "live": "TRỰC TIẾP",
+    "showLess": "Thu gọn ↑",
+    "exploreAll": "Xem tất cả {total} → (+{hidden})",
+    "disclaimer": "chấm điểm theo đánh giá & lượt review (địa điểm) hoặc lượt xem (youtube) qua {sourceLabel} · đã lọc nội dung tài trợ và lặp lại"
+  },
+  "stopCard": {
+    "notVerified": "chưa được xác minh",
+    "verifiedStamp": "ĐÃ XÁC MINH",
+    "hoursLocation": "Giờ hoạt động & vị trí",
+    "crossChecked": "đã đối chiếu trực tiếp",
+    "searchHotels": "🏨 Tìm khách sạn",
+    "viewOnMap": "↗ Xem trên bản đồ",
+    "bookTickets": "🎟 Đặt vé",
+    "weatherAlt": "☁ thay thế: {alternate}"
+  },
+  "reasonCodes": {
+    "social momentum": "xu hướng xã hội",
+    "transport fit": "thuận tiện di chuyển",
+    "food fit": "hợp khẩu vị",
+    "budget fit": "hợp ngân sách",
+    "weather alternate ready": "có phương án thời tiết"
+  },
+  "tripBrief": {
+    "interests": {
+      "food & drink": "ẩm thực & đồ uống",
+      "art & culture": "nghệ thuật & văn hóa",
+      "nature & outdoors": "thiên nhiên & ngoài trời",
+      "history": "lịch sử",
+      "shopping": "mua sắm",
+      "nightlife": "về đêm",
+      "architecture": "kiến trúc",
+      "street food": "ẩm thực đường phố"
+    },
+    "avoid": {
+      "crowded places": "nơi đông đúc",
+      "tourist traps": "bẫy du lịch",
+      "nightlife": "về đêm",
+      "street food": "ẩm thực đường phố",
+      "steep hills": "đồi dốc",
+      "early mornings": "sáng sớm"
+    },
+    "pace": {
+      "relaxed": { "label": "Thư thả", "desc": "2–3 điểm/ngày" },
+      "moderate": { "label": "Vừa phải", "desc": "4–6 điểm/ngày" },
+      "packed": { "label": "Dày đặc", "desc": "7+ điểm/ngày" },
+      "custom": { "label": "Tùy chỉnh", "desc": "Bạn tự đặt mức tối thiểu" }
+    },
+    "transport": {
+      "public_transport": "Phương tiện công cộng",
+      "walking": "Đi bộ",
+      "any": "Bất kỳ"
+    }
+  }
+}

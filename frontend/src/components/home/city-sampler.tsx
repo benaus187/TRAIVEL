@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { MiniStop, type SampleStop } from "@/components/home/mini-stop";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ const CITIES: { id: string; label: string; stop: SampleStop }[] = [
 ];
 
 export function CitySampler() {
+  const t = useTranslations("home.citySampler");
   const [activeId, setActiveId] = useState(CITIES[0].id);
   const active = CITIES.find((c) => c.id === activeId) ?? CITIES[0];
 
@@ -37,14 +39,13 @@ export function CitySampler() {
     <section className="py-14 border-t border-border text-center">
       <div className="max-w-md mx-auto">
         <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-          See it work for your trip
+          {t("eyebrow")}
         </p>
         <h2 className="mt-2 text-2xl font-bold leading-snug">
-          Pick a city. Watch a real stop land.
+          {t("title")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          Same verification, same reason codes as above — try it on a destination of your
-          choice before you commit to a full itinerary.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -74,11 +75,11 @@ export function CitySampler() {
       <div className="pt-7">
         <Link href="/plan">
           <Button size="lg" className="bg-primary text-primary-foreground hover:opacity-90 font-semibold px-7">
-            Plan your own trip →
+            {t("cta")}
           </Button>
         </Link>
       </div>
-      <p className="mt-3 font-mono text-xs text-muted-foreground">No sign-in required to try it</p>
+      <p className="mt-3 font-mono text-xs text-muted-foreground">{t("noSignIn")}</p>
     </section>
   );
 }

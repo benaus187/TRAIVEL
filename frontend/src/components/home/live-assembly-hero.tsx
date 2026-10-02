@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { MiniStop, type SampleStop } from "@/components/home/mini-stop";
 
@@ -12,6 +13,7 @@ const STOPS: SampleStop[] = [
 ];
 
 export function LiveAssemblyHero() {
+  const t = useTranslations("home.hero");
   const sectionRef = useRef<HTMLDivElement>(null);
   const [playKey, setPlayKey] = useState(0);
 
@@ -33,28 +35,27 @@ export function LiveAssemblyHero() {
       <div className="grid grid-cols-1 md:grid-cols-[1.05fr_1fr] gap-10 md:gap-14 items-center">
         <div>
           <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-            AI-powered travel planning
+            {t("eyebrow")}
           </p>
           <h1 className="mt-3 text-4xl md:text-5xl font-bold leading-[1.13] tracking-tight">
-            Your next trip,{" "}
+            {t("titleLine1")}{" "}
             <span className="italic" style={{ fontFamily: "var(--font-serif)" }}>
-              planned by AI.
+              {t("titleItalic")}
             </span>
             <br />
-            Verified stop by stop.
+            {t("titleLine2")}
           </h1>
           <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-md">
-            TRAIVEL builds time-blocked itineraries with real place data and live
-            weather — then explains exactly why each stop was chosen.
+            {t("subtitle")}
           </p>
           <div className="flex items-center gap-4 pt-6 flex-wrap">
             <Link href="/plan">
               <Button size="lg" className="bg-primary text-primary-foreground hover:opacity-90 font-semibold px-7">
-                Plan a trip →
+                {t("cta")}
               </Button>
             </Link>
             <span className="font-mono text-xs text-muted-foreground">
-              No sign-in required to start
+              {t("noSignIn")}
             </span>
           </div>
         </div>

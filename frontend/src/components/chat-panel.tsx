@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase";
 import { useItineraryChat } from "@/hooks/use-itinerary-chat";
 import type { Stop } from "@/lib/schemas/itinerary";
@@ -8,12 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function ChatUpsell() {
+  const t = useTranslations("chat");
   return (
     <div className="border border-dashed border-border rounded-md px-4 py-3 text-center space-y-1">
-      <p className="font-mono text-xs text-muted-foreground">💬 Chat to add, remove, or replace stops</p>
-      <a href="/pricing" className="font-mono text-xs underline">
-        Premium feature — Upgrade to Premium →
-      </a>
+      <p className="font-mono text-xs text-muted-foreground">{t("upsellTeaser")}</p>
+      <Link href="/pricing" className="font-mono text-xs underline">
+        {t("upsellCta")}
+      </Link>
     </div>
   );
 }
@@ -27,6 +30,7 @@ export function ChatPanel({
   setStops: (updater: (prev: Stop[]) => Stop[]) => void;
   getAccessToken: () => Promise<string | null>;
 }) {
+  const t = useTranslations("chat");
   const { messages, setMessages, sending, error, quotaError, sendMessage } = useItineraryChat(itineraryId);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,14 +62,13 @@ export function ChatPanel({
     <Card className="shadow-none">
       <CardContent className="py-4 px-5 space-y-3">
         <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-          Chat to refine this itinerary
+          {t("heading")}
         </p>
 
         <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
           {messages.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              Try &quot;add a coffee stop after breakfast&quot; or &quot;I booked a hotel near District 1, keep
-              stops close to it&quot;.
+              {t("emptyHint")}
             </p>
           )}
           {messages.map((m) => (
@@ -79,7 +82,7 @@ export function ChatPanel({
               </div>
             </div>
           ))}
-          {sending && <p className="font-mono text-xs text-muted-foreground animate-pulse">Thinking…</p>}
+          {sending && <p className="font-mono text-xs text-muted-foreground animate-pulse">{t("thinking")}</p>}
           <div ref={bottomRef} />
         </div>
 
@@ -100,11 +103,11 @@ export function ChatPanel({
                 handleSend();
               }
             }}
-            placeholder="Ask for a change…"
+            placeholder={t("placeholder")}
             className="flex-1 border border-border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring resize-none"
           />
           <Button type="button" size="sm" onClick={handleSend} disabled={sending || !input.trim()}>
-            Send
+            {t("send")}
           </Button>
         </div>
       </CardContent>

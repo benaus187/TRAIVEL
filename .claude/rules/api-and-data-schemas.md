@@ -71,7 +71,7 @@ const StopSchema = z.object({
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Auth profiles. `plan` column (`free`/`premium`) gates unlimited quota — writable only by service role / dashboard, protected by a trigger that reverts client-side self-upgrades |
+| `users` | Auth profiles: `display_name`, `phone`, `date_of_birth` (self-editable via `/profile` page, plain RLS). `plan` column (`free`/`premium`) gates unlimited quota — writable only by service role / dashboard, protected by a trigger that reverts client-side self-upgrades |
 | `trips` | Trip metadata (destination, dates, brief) |
 | `itineraries` | Generated itinerary per trip |
 | `stops` | Individual stops belonging to an itinerary |

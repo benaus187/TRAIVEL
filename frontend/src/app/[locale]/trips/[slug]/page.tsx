@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase";
 import { StopCard, TransitConnector } from "@/components/stop-card";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +13,6 @@ import type { Stop } from "@/lib/schemas/itinerary";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlan } from "@/hooks/use-plan";
 import { ChatPanel, ChatUpsell } from "@/components/chat-panel";
-import Link from "next/link";
 
 const MapView = dynamic(
   () => import("@/components/map-view").then((m) => m.MapView),
@@ -26,6 +27,8 @@ type SharedItinerary = {
 };
 
 export default function SharedTripPage() {
+  const t = useTranslations("sharedTrip");
+  const tCommon = useTranslations("common");
   const { slug } = useParams<{ slug: string }>();
   const { user, getAccessToken } = useAuth();
   const { plan } = usePlan();
@@ -89,8 +92,8 @@ export default function SharedTripPage() {
   if (notFound) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-muted-foreground text-sm">Trip not found.</p>
-        <Link href="/plan" className="text-xs font-mono underline">Plan a new trip</Link>
+        <p className="text-muted-foreground text-sm">{t("notFound")}</p>
+        <Link href="/plan" className="text-xs font-mono underline">{t("planNew")}</Link>
       </div>
     );
   }
@@ -98,7 +101,7 @@ export default function SharedTripPage() {
   if (!data) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground text-sm font-mono">
-        loading…
+        {tCommon("loadingLower")}
       </div>
     );
   }
@@ -108,18 +111,18 @@ export default function SharedTripPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
-            Shared itinerary
+            {t("eyebrow")}
           </p>
-          <h1 className="text-xl font-bold">{data.trips?.destination ?? "Trip"}</h1>
+          <h1 className="text-xl font-bold">{data.trips?.destination ?? t("tripFallback")}</h1>
           <p className="font-mono text-xs text-muted-foreground">
-            {data.trips?.days ?? totalDays} day{(data.trips?.days ?? totalDays) > 1 ? "s" : ""}
+            {tCommon("days", { count: data.trips?.days ?? totalDays })}
           </p>
         </div>
         <button
           onClick={() => window.print()}
           className="no-print font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors shrink-0"
         >
-          print / PDF
+          {tCommon("printPdf")}
         </button>
       </div>
       <Separator />
@@ -136,7 +139,7 @@ export default function SharedTripPage() {
                   : "bg-background text-muted-foreground border-border hover:border-foreground"
               }`}
             >
-              Day {d}
+              {tCommon("dayNumber", { n: d })}
             </button>
           ))}
         </div>
@@ -151,7 +154,7 @@ export default function SharedTripPage() {
           return (
             <div key={d} className={isActive ? "" : "hidden-day"}>
               <h3 className="print-only font-mono text-xs uppercase tracking-widest py-1.5 border-b border-border text-muted-foreground mb-2 mt-3">
-                Day {d}
+                {tCommon("dayNumber", { n: d })}
               </h3>
               {dStops.map((stop, i) => (
                 <div key={i}>
@@ -176,7 +179,7 @@ export default function SharedTripPage() {
 
       <div className="pt-4 text-center">
         <Link href="/plan" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
-          Plan your own trip with TRAIVEL →
+          {t("planYourOwn")}
         </Link>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter, Link } from "@/i18n/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlan } from "@/hooks/use-plan";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +24,7 @@ function initials(label: string): string {
 }
 
 export function Nav() {
+  const t = useTranslations("nav");
   const { user, loading, signOut } = useAuth();
   const { plan } = usePlan();
   const router = useRouter();
@@ -46,7 +47,7 @@ export function Nav() {
         <nav className="flex items-center gap-4 text-sm">
           {pathname === "/plan" && <CurrencySelector />}
           <Link href="/plan" className="text-muted-foreground hover:text-foreground transition-colors">
-            Plan a trip
+            {t("planATrip")}
           </Link>
           {!loading && (
             user ? (
@@ -62,28 +63,31 @@ export function Nav() {
                     {displayName}
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem render={<Link href="/profile" />}>
+                    {t("profile")}
+                  </DropdownMenuItem>
                   <DropdownMenuItem render={<Link href="/trips" />}>
-                    My trips
+                    {t("myTrips")}
                   </DropdownMenuItem>
                   <DropdownMenuItem render={<Link href="/pricing" />}>
                     {isPremium ? (
-                      <span className="text-vermilion">Premium</span>
+                      <span className="text-vermilion">{t("premium")}</span>
                     ) : (
-                      "Upgrade"
+                      t("upgrade")
                     )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => signOut().then(() => router.push("/")).catch(() => router.push("/"))}
                   >
-                    Sign out
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link href="/login">
                 <Button variant="outline" size="sm" className="text-xs font-mono">
-                  Sign in
+                  {t("signIn")}
                 </Button>
               </Link>
             )

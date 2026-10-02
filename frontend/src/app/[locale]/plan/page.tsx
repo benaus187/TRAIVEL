@@ -2,8 +2,10 @@
 
 import { Suspense, useState, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useMediaQuery } from "@base-ui/react/unstable-use-media-query";
+import { Link } from "@/i18n/navigation";
 import { useItineraryStream, WeatherDay } from "@/hooks/use-itinerary-stream";
 import { useTripBriefForm } from "@/hooks/use-trip-brief-form";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,6 +36,8 @@ const TripBriefSwipeDeck = dynamic(
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export default function PlanPage() {
+  const t = useTranslations("plan");
+  const tCommon = useTranslations("common");
   const { stops, setStops, state, error, quotaError, tripId, itineraryId, shareSlug, weather, trends, elapsedSeconds, generate, reset, abort } = useItineraryStream();
   const { user, getAccessToken } = useAuth();
   const { plan } = usePlan();
@@ -91,14 +95,14 @@ export default function PlanPage() {
           <TripBriefChapters form={form} hasResult={hasResult} isStreaming={isStreaming} />
         ) : hasResult ? (
           <div className="rounded-xl border border-line-strong bg-card p-4 space-y-3">
-            <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Trip Brief</p>
-            <p className="text-sm font-bold">{brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}</p>
+            <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">{t("tripBriefEyebrow")}</p>
+            <p className="text-sm font-bold">{brief.destination} · {tCommon("days", { count: computedDays ?? 1 })}</p>
             <div className="flex gap-2">
               <Button type="button" size="sm" disabled={isStreaming} onClick={() => form.handleSubmit()} className="flex-1 bg-vermilion text-white hover:bg-vermilion/90">
-                {isStreaming ? "Generating…" : "Regenerate"}
+                {isStreaming ? tCommon("generating") : t("regenerate")}
               </Button>
               <Button type="button" size="sm" variant="outline" onClick={form.handleClear}>
-                Clear
+                {tCommon("clear")}
               </Button>
             </div>
           </div>
@@ -115,7 +119,7 @@ export default function PlanPage() {
 
         {state === "idle" && (
           <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-            Fill in the brief and generate your itinerary.
+            {t("idlePrompt")}
           </div>
         )}
 
@@ -123,14 +127,14 @@ export default function PlanPage() {
           <div className="p-4 rounded-md bg-destructive/10 text-destructive text-sm space-y-3">
             <p>{error}</p>
             {quotaError?.tier === "anonymous" && (
-              <a href="/login" className="font-mono text-xs underline">
-                Sign in for 5 generations/day
-              </a>
+              <Link href="/login" className="font-mono text-xs underline">
+                {t("quotaSignIn")}
+              </Link>
             )}
             {quotaError?.tier === "free" && (
-              <a href="/pricing" className="font-mono text-xs underline">
-                Free plan: 5/day. Upgrade to Premium for unlimited generations →
-              </a>
+              <Link href="/pricing" className="font-mono text-xs underline">
+                {t("quotaUpgrade")}
+              </Link>
             )}
             {!quotaError && lastSubmittedBrief && (
               <Button
@@ -142,7 +146,7 @@ export default function PlanPage() {
                 }}
                 className="text-xs font-mono border-destructive/30 text-destructive hover:bg-destructive/10"
               >
-                Retry
+                {tCommon("retry")}
               </Button>
             )}
           </div>
@@ -152,21 +156,21 @@ export default function PlanPage() {
         {(state === "streaming" || state === "verifying") && !hasResult && (
           <div className="flex flex-col gap-3 pt-8">
             <p className="font-mono text-xs text-muted-foreground animate-pulse">
-              {`Discovering places in ${brief.destination ?? "your destination"}…`}
+              {t("discovering", { destination: brief.destination ?? "" })}
             </p>
             <div className="h-1 w-full bg-border rounded-full overflow-hidden">
               <div className="h-full rounded-full progress-indeterminate bg-vermilion" />
             </div>
             {elapsedSeconds >= 20 && (
               <div className="flex items-center gap-3">
-                <p className="font-mono text-xs text-amber-600">Taking longer than usual…</p>
+                <p className="font-mono text-xs text-amber-600">{tCommon("takingLonger")}</p>
                 {elapsedSeconds >= 40 && (
                   <button
                     type="button"
                     onClick={abort}
                     className="font-mono text-xs text-destructive border border-destructive/30 rounded px-2 py-0.5 hover:bg-destructive/10 transition-colors"
                   >
-                    Cancel
+                    {tCommon("cancel")}
                   </button>
                 )}
               </div>
@@ -179,43 +183,43 @@ export default function PlanPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-                {brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}
+                {brief.destination} · {tCommon("days", { count: computedDays ?? 1 })}
               </p>
               {state === "streaming" && (
                 <span className="font-mono text-xs text-muted-foreground animate-pulse">
                   {stops.length === 0
-                    ? `Discovering places in ${brief.destination ?? "your destination"}…`
-                    : `Planning itinerary… ${stops.length} stop${stops.length !== 1 ? "s" : ""} so far`}
+                    ? t("discovering", { destination: brief.destination ?? "" })
+                    : t("planningProgress", { count: stops.length })}
                 </span>
               )}
               {state === "verifying" && (
                 <span className="font-mono text-xs text-muted-foreground animate-pulse">
                   {(() => {
                     const verified = stops.filter((s) => s.verified).length;
-                    return `Verifying stop ${verified + 1} of ${stops.length}…`;
+                    return t("verifyingProgress", { current: verified + 1, total: stops.length });
                   })()}
                 </span>
               )}
               {state === "done" && tripId && (
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-stamp">✓ saved</span>
+                  <span className="font-mono text-xs text-stamp">{t("saved")}</span>
                   {shareSlug ? (
                     <button
                       onClick={() => navigator.clipboard.writeText(`${window.location.origin}/trips/${shareSlug}`)}
                       className="font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors"
                     >
-                      copy share link
+                      {t("copyShareLink")}
                     </button>
                   ) : !user ? (
-                    <a href="/login" className="font-mono text-xs text-muted-foreground hover:text-foreground underline">
-                      sign in to share
-                    </a>
+                    <Link href="/login" className="font-mono text-xs text-muted-foreground hover:text-foreground underline">
+                      {t("signInToShare")}
+                    </Link>
                   ) : null}
                   <button
                     onClick={() => window.print()}
                     className="no-print font-mono text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-0.5 transition-colors"
                   >
-                    print / PDF
+                    {tCommon("printPdf")}
                   </button>
                 </div>
               )}
@@ -238,14 +242,14 @@ export default function PlanPage() {
                 </div>
                 {elapsedSeconds >= 20 && (
                   <div className="flex items-center gap-3">
-                    <p className="font-mono text-xs text-amber-600">Taking longer than usual…</p>
+                    <p className="font-mono text-xs text-amber-600">{tCommon("takingLonger")}</p>
                     {elapsedSeconds >= 40 && (
                       <button
                         type="button"
                         onClick={abort}
                         className="font-mono text-xs text-destructive border border-destructive/30 rounded px-2 py-0.5 hover:bg-destructive/10 transition-colors"
                       >
-                        Cancel
+                        {tCommon("cancel")}
                       </button>
                     )}
                   </div>
@@ -274,7 +278,7 @@ export default function PlanPage() {
                         : "bg-background text-muted-foreground border-border hover:border-foreground"
                     }`}
                   >
-                    Day {d}
+                    {tCommon("dayNumber", { n: d })}
                   </button>
                 ))}
               </div>
@@ -282,7 +286,7 @@ export default function PlanPage() {
 
             {/* Print-only: trip title + flight info */}
             <div className="print-only mb-4 space-y-1">
-              <p className="font-bold text-base">{brief.destination} · {computedDays} day{(computedDays ?? 1) > 1 ? "s" : ""}</p>
+              <p className="font-bold text-base">{brief.destination} · {tCommon("days", { count: computedDays ?? 1 })}</p>
               {flightNotes && (
                 <p className="font-mono text-xs text-muted-foreground whitespace-pre-line">{flightNotes}</p>
               )}
@@ -300,7 +304,7 @@ export default function PlanPage() {
               return (
                 <div key={d} className={isActive ? "" : "hidden-day"}>
                   <h3 className="print-only font-mono text-xs uppercase tracking-widest py-1.5 border-b border-border text-muted-foreground mb-2 mt-3">
-                    Day {d}
+                    {tCommon("dayNumber", { n: d })}
                   </h3>
                   {dStops.map((stop, i) => (
                     <div key={i} className="stop-card-enter">
@@ -330,22 +334,24 @@ export default function PlanPage() {
 }
 
 function CheckoutSuccessBanner() {
+  const t = useTranslations("plan");
   const searchParams = useSearchParams();
   if (searchParams.get("checkout") !== "success") return null;
   return (
     <p className="font-mono text-xs mb-3 text-stamp">
-      ✓ You&apos;re now Premium — unlimited generations unlocked.
+      ✓ {t("checkoutSuccess")}
     </p>
   );
 }
 
 function WeatherBanner({ forecasts, activeDay }: { forecasts: WeatherDay[]; activeDay: number }) {
+  const t = useTranslations("plan");
   const location = forecasts[0]?.location;
   return (
     <div className="space-y-1.5 py-1">
       {location && (
         <p className="font-mono text-[10px] text-muted-foreground">
-          weather · {location}
+          {t("weatherLabel", { location })}
         </p>
       )}
       <div className="flex gap-2 flex-wrap">

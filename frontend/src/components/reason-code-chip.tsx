@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { ReasonCode } from "@/lib/schemas/itinerary";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +17,7 @@ const CHIP_STYLES: Record<ReasonCode, string> = {
 };
 
 export function ReasonCodeChip({ code }: { code: ReasonCode }) {
+  const t = useTranslations("reasonCodes");
   return (
     <span
       className={cn(
@@ -21,7 +25,7 @@ export function ReasonCodeChip({ code }: { code: ReasonCode }) {
         CHIP_STYLES[code]
       )}
     >
-      {code}
+      {t(code)}
     </span>
   );
 }

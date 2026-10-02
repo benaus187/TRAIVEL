@@ -36,3 +36,4 @@ design/
 .claude/skills/
 .vscode/
 skills-lock.json
+dev-start.ps1

@@ -1,13 +1,19 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Wordmark } from "@/components/nav";
 
-const FIELDS: { label: string; value: string; href: string }[] = [
-  { label: "Email", value: "bangluonghuynh950@gmail.com", href: "mailto:bangluonghuynh950@gmail.com" },
-  { label: "GitHub", value: "github.com/benaus187/TRAIVEL", href: "https://github.com/benaus187/TRAIVEL" },
-  { label: "LinkedIn", value: "Luong Bang Huynh", href: "https://www.linkedin.com/in/luong-bang-huynh-3029b72b5" },
+const FIELD_KEYS = ["fieldEmail", "fieldGithub", "fieldLinkedin"] as const;
+
+const FIELDS: { key: (typeof FIELD_KEYS)[number]; value: string; href: string }[] = [
+  { key: "fieldEmail", value: "bangluonghuynh950@gmail.com", href: "mailto:bangluonghuynh950@gmail.com" },
+  { key: "fieldGithub", value: "github.com/benaus187/TRAIVEL", href: "https://github.com/benaus187/TRAIVEL" },
+  { key: "fieldLinkedin", value: "Luong Bang Huynh", href: "https://www.linkedin.com/in/luong-bang-huynh-3029b72b5" },
 ];
 
 export function Footer() {
+  const t = useTranslations("footer");
   return (
     <footer className="bg-navy text-board-fg no-print">
       <div className="max-w-3xl mx-auto px-6 pt-7 pb-6">
@@ -15,17 +21,17 @@ export function Footer() {
           <div className="max-w-[26ch]">
             <Wordmark className="text-board-fg" />
             <p className="mt-2 text-sm leading-relaxed text-board-fg/60">
-              Every stop verified. Every reason explained.
+              {t("tagline")}
             </p>
           </div>
           <div className="flex flex-wrap gap-7">
             {FIELDS.map((field, i) => (
               <div
-                key={field.label}
+                key={field.key}
                 className={`flex flex-col gap-1 ${i > 0 ? "pl-5 border-l-2 border-dashed border-board-fg/20" : ""}`}
               >
                 <span className="font-mono text-[10px] uppercase tracking-widest text-board-fg/55">
-                  {field.label}
+                  {t(field.key)}
                 </span>
                 <a
                   href={field.href}
@@ -43,10 +49,10 @@ export function Footer() {
           <span>© 2026 TRAIVEL</span>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-board-fg hover:underline">
-              Privacy Policy
+              {t("privacyPolicy")}
             </Link>
             <Link href="/terms" className="hover:text-board-fg hover:underline">
-              Terms of Service
+              {t("termsOfService")}
             </Link>
           </div>
         </div>

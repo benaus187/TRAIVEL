@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,10 @@ type Trip = {
 };
 
 export default function TripsPage() {
+  const t = useTranslations("trips");
+  const tCommon = useTranslations("common");
+  const tNav = useTranslations("nav");
+  const locale = useLocale();
   const { user, loading, supabase, signOut } = useAuth();
   const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -81,7 +85,7 @@ export default function TripsPage() {
   if (loading || fetching) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground text-sm font-mono">
-        loading…
+        {tCommon("loadingLower")}
       </div>
     );
   }
@@ -93,25 +97,25 @@ export default function TripsPage() {
       <div className="flex items-center justify-between">
         <div>
           <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-1">
-            My Trips
+            {t("eyebrow")}
           </p>
           <h1 className="text-xl font-bold">{user.email}</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/plan">
-            <Button variant="outline" size="sm">+ New trip</Button>
+            <Button variant="outline" size="sm">{t("newTrip")}</Button>
           </Link>
           <Button variant="ghost" size="sm" onClick={() => signOut().then(() => router.replace("/"))}>
-            Sign out
+            {tNav("signOut")}
           </Button>
         </div>
       </div>
 
       {trips.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-3">
-          <p className="text-sm">No trips yet.</p>
+          <p className="text-sm">{t("empty")}</p>
           <Link href="/plan">
-            <Button size="sm">Plan your first trip</Button>
+            <Button size="sm">{t("planFirst")}</Button>
           </Link>
         </div>
       ) : (
@@ -124,8 +128,8 @@ export default function TripsPage() {
                   <div className="space-y-0.5">
                     <p className="font-semibold text-sm">{trip.destination}</p>
                     <p className="font-mono text-xs text-muted-foreground">
-                      {trip.days} day{trip.days > 1 ? "s" : ""} ·{" "}
-                      {new Date(trip.created_at).toLocaleDateString("en-US", {
+                      {tCommon("days", { count: trip.days })} ·{" "}
+                      {new Date(trip.created_at).toLocaleDateString(locale, {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
@@ -136,7 +140,7 @@ export default function TripsPage() {
                     {slug && (
                       <Link href={`/trips/${slug}`}>
                         <Button variant="outline" size="sm" className="font-mono text-xs">
-                          ↗ view
+                          {t("view")}
                         </Button>
                       </Link>
                     )}
@@ -151,7 +155,7 @@ export default function TripsPage() {
                       disabled={!slug}
                       className="text-xs font-mono text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors px-2"
                     >
-                      {copiedSlug === slug ? "✓ copied" : "copy link"}
+                      {copiedSlug === slug ? t("copied") : t("copyLink")}
                     </button>
                     <button
                       onClick={() => handleDeleteClick(trip.id)}
@@ -161,7 +165,7 @@ export default function TripsPage() {
                           : "text-muted-foreground hover:text-destructive"
                       }`}
                     >
-                      {confirmingId === trip.id ? "confirm delete?" : "delete"}
+                      {confirmingId === trip.id ? t("confirmDelete") : t("delete")}
                     </button>
                   </div>
                 </CardContent>

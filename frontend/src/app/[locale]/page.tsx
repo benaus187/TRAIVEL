@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { LiveAssemblyHero } from "@/components/home/live-assembly-hero";
 import { WhyTraivelBento } from "@/components/home/why-traivel-bento";
@@ -22,20 +23,21 @@ export default function Home() {
 }
 
 function BottomCTA() {
+  const t = useTranslations("home.bottomCta");
   return (
     <section className="py-16 border-t border-border text-center space-y-5">
       <h2 className="text-2xl font-bold">
-        Unlike ChatGPT,{" "}
+        {t("titlePrefix")}{" "}
         <span className="italic" style={{ fontFamily: "var(--font-serif)" }}>
-          TRAIVEL shows its work.
+          {t("titleItalic")}
         </span>
       </h2>
       <p className="text-muted-foreground text-sm max-w-md mx-auto">
-        Every stop verified. Every reason explained. Real data, not hallucinations.
+        {t("subtitle")}
       </p>
       <Link href="/plan">
         <Button size="lg" className="bg-primary text-primary-foreground hover:opacity-90 font-semibold px-7 mt-2">
-          Start planning →
+          {t("cta")}
         </Button>
       </Link>
     </section>

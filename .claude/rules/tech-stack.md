@@ -18,14 +18,25 @@ alwaysApply: false
 | Maps | react-map-gl v8 + Mapbox GL JS v3 |
 | Validation | Zod v3 |
 | Auth client | @supabase/supabase-js v2 + @supabase/ssr |
+| i18n | next-intl v4 — locale-prefixed routing (`/en`, `/vi`), messages in `frontend/messages/{locale}.json` |
 
 **package.json versions:**
 ```json
 "next": "^16", "react": "^19", "typescript": "^5",
 "tailwindcss": "^4", "@tanstack/react-query": "^5",
 "zustand": "^5", "react-map-gl": "^8", "mapbox-gl": "^3",
-"@supabase/supabase-js": "^2", "@supabase/ssr": "^0", "zod": "^3"
+"@supabase/supabase-js": "^2", "@supabase/ssr": "^0", "zod": "^3",
+"next-intl": "^4"
 ```
+
+### Internationalization (next-intl)
+
+- Supported locales: `en` (default), `vi` — declared in `frontend/src/i18n/routing.ts`
+- Routes live under `frontend/src/app/[locale]/...`; `app/auth/callback` (OAuth) and `app/favicon.ico` stay outside `[locale]` on purpose
+- Next.js 16 renamed `middleware.ts` → `proxy.ts` — the locale-detection proxy is `frontend/src/proxy.ts`, not `middleware.ts`
+- Use `Link`/`useRouter`/`usePathname` from `@/i18n/navigation` (not `next/link` / `next/navigation`) for any in-app link so the current locale is preserved
+- Add new UI strings to **both** `frontend/messages/en.json` and `frontend/messages/vi.json` under the same key
+- Out of scope for translation: AI-generated itinerary content (stop names/descriptions), Zod validation messages, and backend-sourced strings (e.g. weather condition text) — these come from the API at runtime and aren't UI copy
 
 ## Backend (`backend/`)
 

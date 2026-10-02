@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { ReasonCodeChip } from "@/components/reason-code-chip";
 import type { ReasonCode } from "@/lib/schemas/itinerary";
 
@@ -34,25 +35,26 @@ function MiniStamp() {
 }
 
 export function WhyTraivelBento() {
+  const t = useTranslations("home.bento");
   return (
     <section className="py-14 border-t border-border">
       <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-6">
-        Why TRAIVEL
+        {t("eyebrow")}
       </p>
       <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-4">
         <div className="md:row-span-2 bg-card border border-line-strong p-6 flex flex-col gap-3.5">
           <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-            Trend signals
+            {t("trendSignals.label")}
           </span>
           <h3 className="text-lg font-bold leading-snug">
-            Places people are actually visiting right now
+            {t("trendSignals.title")}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Pulled from Google Places ranked by popularity — not a static database from 2023.
+            {t("trendSignals.body")}
           </p>
           <div className="mt-auto bg-board-bg text-board-fg px-4 py-3.5">
             <div className="flex items-center justify-between font-sans font-bold uppercase text-[11px] tracking-wide mb-2.5">
-              Departures — Hanoi
+              {t("demoHeading")}
               <span className="w-1.5 h-1.5 rounded-full bg-stamp animate-pulse" />
             </div>
             {TREND_ROWS.map((row, i) => (
@@ -78,13 +80,13 @@ export function WhyTraivelBento() {
 
         <div className="bg-card border border-line-strong p-6 flex flex-col gap-3.5">
           <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-            Reason codes
+            {t("reasonCodes.label")}
           </span>
           <h3 className="text-lg font-bold leading-snug">
-            Every stop comes with a typed explanation
+            {t("reasonCodes.title")}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            No more black-box AI suggestions.
+            {t("reasonCodes.body")}
           </p>
           <div className="mt-auto flex flex-wrap gap-1.5">
             {ALL_CODES.map((code) => (
@@ -95,20 +97,20 @@ export function WhyTraivelBento() {
 
         <div className="bg-card border border-line-strong p-6 flex flex-col gap-3.5">
           <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-            Verification built-in
+            {t("verification.label")}
           </span>
           <h3 className="text-lg font-bold leading-snug">
-            Not a post-process. Part of the generation.
+            {t("verification.title")}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Place data and weather are fed to the AI before it writes your itinerary.
+            {t("verification.body")}
           </p>
           <div className="mt-auto grid grid-cols-[44px_1fr_56px] border border-line-strong bg-background">
             <div className="bg-navy text-background font-mono text-xs flex items-center justify-center">
               09:30
             </div>
             <div className="px-2.5 py-2 text-xs font-bold uppercase border-l-2 border-r-2 border-dashed border-line flex items-center">
-              Café stop
+              {t("cafeStop")}
             </div>
             <div className="flex items-center justify-center">
               <MiniStamp />

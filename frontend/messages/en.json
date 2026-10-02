@@ -1,0 +1,349 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "loadingLower": "loading…",
+    "clear": "Clear",
+    "generating": "Generating…",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "takingLonger": "Taking longer than usual…",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "dayNumber": "Day {n}",
+    "printPdf": "print / PDF",
+    "depart": "DEPART",
+    "verified": "✓ verified",
+    "destinationPlaceholder": "Tokyo, Sydney, Paris…",
+    "minStopsPerDay": "Minimum stops / day",
+    "eg": "e.g.",
+    "optionalParen": "(optional)",
+    "none": "None"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "nav": {
+    "planATrip": "Plan a trip",
+    "profile": "Profile",
+    "myTrips": "My trips",
+    "upgrade": "Upgrade",
+    "premium": "Premium",
+    "signOut": "Sign out",
+    "signIn": "Sign in"
+  },
+  "profile": {
+    "eyebrow": "Account",
+    "title": "Profile",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "+1 555 000 1234",
+    "dobLabel": "Date of birth",
+    "languageLabel": "Language",
+    "save": "Save changes",
+    "saved": "✓ saved"
+  },
+  "footer": {
+    "tagline": "Every stop verified. Every reason explained.",
+    "fieldEmail": "Email",
+    "fieldGithub": "GitHub",
+    "fieldLinkedin": "LinkedIn",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "AI-powered travel planning",
+      "titleLine1": "Your next trip,",
+      "titleItalic": "planned by AI.",
+      "titleLine2": "Verified stop by stop.",
+      "subtitle": "TRAIVEL builds time-blocked itineraries with real place data and live weather — then explains exactly why each stop was chosen.",
+      "cta": "Plan a trip →",
+      "noSignIn": "No sign-in required to start"
+    },
+    "bento": {
+      "eyebrow": "Why TRAIVEL",
+      "trendSignals": {
+        "label": "Trend signals",
+        "title": "Places people are actually visiting right now",
+        "body": "Pulled from Google Places ranked by popularity — not a static database from 2023."
+      },
+      "demoHeading": "Departures — Hanoi",
+      "reasonCodes": {
+        "label": "Reason codes",
+        "title": "Every stop comes with a typed explanation",
+        "body": "No more black-box AI suggestions."
+      },
+      "verification": {
+        "label": "Verification built-in",
+        "title": "Not a post-process. Part of the generation.",
+        "body": "Place data and weather are fed to the AI before it writes your itinerary."
+      },
+      "cafeStop": "Café stop"
+    },
+    "citySampler": {
+      "eyebrow": "See it work for your trip",
+      "title": "Pick a city. Watch a real stop land.",
+      "subtitle": "Same verification, same reason codes as above — try it on a destination of your choice before you commit to a full itinerary.",
+      "cta": "Plan your own trip →",
+      "noSignIn": "No sign-in required to try it"
+    },
+    "bottomCta": {
+      "titlePrefix": "Unlike ChatGPT,",
+      "titleItalic": "TRAIVEL shows its work.",
+      "subtitle": "Every stop verified. Every reason explained. Real data, not hallucinations.",
+      "cta": "Start planning →"
+    },
+    "trustLine": {
+      "stat1": "of stops verified against Google Places + live weather",
+      "stat2": "typed reason codes explaining every stop, no black box",
+      "stat3": "static databases — trend data is pulled live, not cached from 2023"
+    }
+  },
+  "login": {
+    "eyebrow": "Sign in",
+    "title": "Save & share your trips",
+    "subtitle": "Sign in to access your saved itineraries and share them publicly.",
+    "google": "Continue with Google",
+    "or": "or",
+    "sentTitle": "Check your email",
+    "sentBody": "We sent a sign-in link to <b>{email}</b>",
+    "emailPlaceholder": "your@email.com",
+    "sending": "Sending…",
+    "sendMagicLink": "Send magic link",
+    "back": "← back"
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "title": "Free to plan. Premium to plan without limits.",
+    "cancelBanner": "Checkout canceled — no charge was made.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "freeTitle": "Free",
+    "free": {
+      "feature1": "5 itinerary generations / day",
+      "feature2": "Full verification (places + weather)",
+      "feature3": "Trend signals, map view, share links"
+    },
+    "premiumTitle": "Premium",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "premium": {
+      "feature1": "Unlimited itinerary generations",
+      "feature2": "Everything in Free",
+      "feature3": "Priority support"
+    },
+    "manageSubscription": "Manage subscription",
+    "upgradeToPremium": "Upgrade to Premium",
+    "checkoutError": "Could not start checkout — try again.",
+    "portalError": "Could not open billing portal — try again."
+  },
+  "privacy": {
+    "metaTitle": "Privacy Policy — TRAIVEL",
+    "eyebrow": "Privacy Policy",
+    "title": "What TRAIVEL does with your data",
+    "intro": "TRAIVEL is a solo-built portfolio project, not a company. This page describes what actually happens to your data when you use it.",
+    "collected": {
+      "heading": "What's collected",
+      "body": "If you sign in, your email address and (for Google sign-in) your name and avatar are stored via Supabase Auth. Trip briefs you submit (destination, dates, interests, budget) and the itineraries generated from them are stored so you can revisit and share your trips. Anonymous, signed-out use is also supported and doesn't require an account."
+    },
+    "thirdParty": {
+      "heading": "Third-party services",
+      "body": "Generating an itinerary sends your trip brief to Anthropic's Claude API. Place names are checked against the Google Places API and Open-Meteo for weather; YouTube Data API is used for trend signals. Payments (Premium plan) are processed by Stripe — TRAIVEL never sees or stores your card details. None of your data is sold to third parties."
+    },
+    "controls": {
+      "heading": "Your controls",
+      "body": "You can delete your trips from the My Trips page. To delete your account entirely or ask any question about your data, email"
+    }
+  },
+  "terms": {
+    "metaTitle": "Terms of Service — TRAIVEL",
+    "eyebrow": "Terms of Service",
+    "title": "The short version",
+    "intro": "TRAIVEL is a solo-built portfolio project, provided as-is with no warranty of any kind.",
+    "usingItinerary": {
+      "heading": "Using the itinerary",
+      "body": "Itineraries are AI-generated and cross-checked against Google Places and weather data at the time they're created, but places can close, change hours, or stop existing. Always double-check opening hours, prices, and availability before you rely on a stop — especially for anything time-sensitive or booked in advance."
+    },
+    "billing": {
+      "heading": "Premium plan & billing",
+      "body": "Premium subscriptions are billed and managed through Stripe. You can view invoices, update your payment method, or cancel anytime from the billing portal linked on the Pricing page — cancelling stops future charges but doesn't retroactively refund the current billing period."
+    },
+    "noWarranty": {
+      "heading": "No warranty",
+      "body": "TRAIVEL is offered without warranties of any kind, express or implied. It's not liable for travel decisions made based on its output. If something looks broken or wrong, email"
+    }
+  },
+  "trips": {
+    "eyebrow": "My Trips",
+    "newTrip": "+ New trip",
+    "empty": "No trips yet.",
+    "planFirst": "Plan your first trip",
+    "view": "↗ view",
+    "copied": "✓ copied",
+    "copyLink": "copy link",
+    "confirmDelete": "confirm delete?",
+    "delete": "delete"
+  },
+  "sharedTrip": {
+    "notFound": "Trip not found.",
+    "planNew": "Plan a new trip",
+    "eyebrow": "Shared itinerary",
+    "tripFallback": "Trip",
+    "planYourOwn": "Plan your own trip with TRAIVEL →"
+  },
+  "plan": {
+    "tripBriefEyebrow": "Trip Brief",
+    "regenerate": "Regenerate",
+    "clearToEditBanner": "Clear to edit and plan a new trip.",
+    "idlePrompt": "Fill in the brief and generate your itinerary.",
+    "quotaSignIn": "Sign in for 5 generations/day",
+    "quotaUpgrade": "Free plan: 5/day. Upgrade to Premium for unlimited generations →",
+    "discovering": "Discovering places in {destination}…",
+    "planningProgress": "Planning itinerary… {count, plural, one {# stop} other {# stops}} so far",
+    "verifyingProgress": "Verifying stop {current} of {total}…",
+    "saved": "✓ saved",
+    "copyShareLink": "copy share link",
+    "signInToShare": "sign in to share",
+    "checkoutSuccess": "You're now Premium — unlimited generations unlocked.",
+    "weatherLabel": "weather · {location}",
+    "generateItinerary": "Generate itinerary →",
+    "chapters": {
+      "heading": "Where are you going?",
+      "basics": { "title": "Trip basics" },
+      "vibe": { "title": "Vibe check" },
+      "pace": { "title": "Set the pace" },
+      "budgetLabel": "Total budget ({currency})",
+      "approxUsd": "≈ ${amount} USD",
+      "paceLabel": "Pace",
+      "gettingAround": "Getting around",
+      "extrasLabel": "Extras",
+      "addYourOwn": "＋ add your own",
+      "customInterestPlaceholder": "Type interest, press Enter or comma",
+      "progressLabel": "{done} of {total} chapters done"
+    },
+    "extras": {
+      "includeAccommodation": "Include overnight suggestions",
+      "flightPlaceholder": "Flight info (optional) — arrival/departure times",
+      "avoidLabel": "Avoid"
+    },
+    "review": {
+      "destination": "Destination",
+      "dates": "Dates",
+      "interests": "Interests",
+      "budget": "Budget",
+      "pace": "Pace",
+      "avoid": "Avoid",
+      "customPaceMin": "Custom · {n} stops/day min"
+    },
+    "swipeDeck": {
+      "progressAriaLabel": "Trip brief progress",
+      "prevAria": "Previous question",
+      "nextAria": "Next question",
+      "nudgeDestination": "Pick a destination from the list first",
+      "nudgeInterest": "Pick at least one interest",
+      "nudgeBudget": "Enter a budget above 0",
+      "customInterestPlaceholder": "Add your own, press Enter or comma",
+      "perDaySummary": "≈ {symbol}{perDay}/day for {days} days",
+      "back": "← Back",
+      "next": "Next →",
+      "continue": "Continue →",
+      "screens": {
+        "whereWhen": "Where & when",
+        "vibeCheck": "Vibe check",
+        "setThePace": "Set the pace",
+        "budget": "Budget",
+        "extras": "Extras",
+        "review": "Review"
+      },
+      "basics": {
+        "title": "Where are we headed?",
+        "subtitle": "Type a city — we'll verify it's real as you go."
+      },
+      "vibe": {
+        "title": "What are you into?",
+        "subtitle": "Tap all that fit."
+      },
+      "pace": {
+        "title": "Set your pace",
+        "subtitle": "How packed should each day feel?"
+      },
+      "budget": {
+        "title": "Budget for the trip",
+        "subtitle": "Total, all-in."
+      },
+      "extras": {
+        "title": "Anything else?",
+        "subtitle": "Optional — skip if you're ready to go."
+      },
+      "review": {
+        "title": "Brief complete",
+        "subtitle": "Here's what we'll plan around — go back to tweak anything."
+      }
+    }
+  },
+  "chat": {
+    "upsellTeaser": "💬 Chat to add, remove, or replace stops",
+    "upsellCta": "Premium feature — Upgrade to Premium →",
+    "heading": "Chat to refine this itinerary",
+    "emptyHint": "Try \"add a coffee stop after breakfast\" or \"I booked a hotel near District 1, keep stops close to it\".",
+    "thinking": "Thinking…",
+    "placeholder": "Ask for a change…",
+    "send": "Send"
+  },
+  "trend": {
+    "heading": "Departures — Trending in {city}",
+    "live": "LIVE",
+    "showLess": "Show less ↑",
+    "exploreAll": "Explore all {total} → (+{hidden})",
+    "disclaimer": "scored by rating & review volume (places) or view count (youtube) via {sourceLabel} · sponsored and repeated content filtered out"
+  },
+  "stopCard": {
+    "notVerified": "not yet verified",
+    "verifiedStamp": "VERIFIED",
+    "hoursLocation": "Hours & location",
+    "crossChecked": "cross-checked live",
+    "searchHotels": "🏨 Search hotels",
+    "viewOnMap": "↗ View on map",
+    "bookTickets": "🎟 Book tickets",
+    "weatherAlt": "☁ alt: {alternate}"
+  },
+  "reasonCodes": {
+    "social momentum": "social momentum",
+    "transport fit": "transport fit",
+    "food fit": "food fit",
+    "budget fit": "budget fit",
+    "weather alternate ready": "weather alternate ready"
+  },
+  "tripBrief": {
+    "interests": {
+      "food & drink": "food & drink",
+      "art & culture": "art & culture",
+      "nature & outdoors": "nature & outdoors",
+      "history": "history",
+      "shopping": "shopping",
+      "nightlife": "nightlife",
+      "architecture": "architecture",
+      "street food": "street food"
+    },
+    "avoid": {
+      "crowded places": "crowded places",
+      "tourist traps": "tourist traps",
+      "nightlife": "nightlife",
+      "street food": "street food",
+      "steep hills": "steep hills",
+      "early mornings": "early mornings"
+    },
+    "pace": {
+      "relaxed": { "label": "Relaxed", "desc": "2–3 stops/day" },
+      "moderate": { "label": "Moderate", "desc": "4–6 stops/day" },
+      "packed": { "label": "Packed", "desc": "7+ stops/day" },
+      "custom": { "label": "Custom", "desc": "You set the minimum" }
+    },
+    "transport": {
+      "public_transport": "Public transit",
+      "walking": "Walking",
+      "any": "Any"
+    }
+  }
+}

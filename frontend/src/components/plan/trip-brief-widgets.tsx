@@ -128,15 +128,15 @@ export const AVOID_ICONS: Record<string, string> = {
   "early mornings": "⏰",
 };
 
-export const PACE_META: Record<string, { emoji: string; label: string; desc: string }> = {
-  relaxed: { emoji: "🌤️", label: "Relaxed", desc: "2–3 stops/day" },
-  moderate: { emoji: "🚶", label: "Moderate", desc: "4–6 stops/day" },
-  packed: { emoji: "⚡", label: "Packed", desc: "7+ stops/day" },
-  custom: { emoji: "🎛️", label: "Custom", desc: "You set the minimum" },
+export const PACE_EMOJI: Record<string, string> = {
+  relaxed: "🌤️",
+  moderate: "🚶",
+  packed: "⚡",
+  custom: "🎛️",
 };
 
-export const TRANSPORT_META: Record<string, { emoji: string; label: string }> = {
-  public_transport: { emoji: "🚇", label: "Public transit" },
-  walking: { emoji: "🚶", label: "Walking" },
-  any: { emoji: "🔀", label: "Any" },
+export const TRANSPORT_EMOJI: Record<string, string> = {
+  public_transport: "🚇",
+  walking: "🚶",
+  any: "🔀",
 };
